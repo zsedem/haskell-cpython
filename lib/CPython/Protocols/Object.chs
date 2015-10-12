@@ -63,6 +63,7 @@ import qualified Data.Text as T
 import           System.IO (Handle, hPutStrLn)
 
 import           CPython.Internal hiding (toBool)
+import           CPython.Protocols.Object.Enums
 import qualified CPython.Types.Bytes as B
 import qualified CPython.Types.Dictionary as D
 import qualified CPython.Types.Tuple as Tuple
@@ -242,8 +243,6 @@ callMethodArgs self name args = do
 
 data Comparison = LT | LE | EQ | NE | GT | GE
 	deriving (Show)
-
-{# enum HSCPythonComparisonEnum {} #}
 
 comparisonToInt :: Comparison -> CInt
 comparisonToInt = fromIntegral . fromEnum . enum where

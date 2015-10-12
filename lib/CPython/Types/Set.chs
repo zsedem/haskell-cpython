@@ -119,7 +119,12 @@ fromSet set = iterableToTuple set >>= fromTuple
 -- brand new 'FrozenSet's before they are exposed to other code). Throws a
 -- @TypeError@ if the key is unhashable. Throws a @MemoryError@ if there is
 -- no room to grow.
-{# fun PySet_Add as add
+add :: (AnySet set, Object key) => set -> key -> IO ()
+add = c_add
+
+-- c2hs won't accept functions named "add" any more, so have it generate
+-- c_add and then wrap that manually.
+{# fun PySet_Add as c_add
 	`(AnySet set, Object key)' =>
 	{ withObject* `set'
 	, withObject* `key'

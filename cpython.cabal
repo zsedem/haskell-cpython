@@ -1,5 +1,5 @@
 name: cpython
-version: 3.3.0
+version: 3.3.1
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
@@ -25,7 +25,7 @@ source-repository head
 source-repository this
   type: bazaar
   location: https://john-millikin.com/branches/haskell-cpython/3.3/
-  tag: haskell-cpython_3.3.0
+  tag: haskell-cpython_3.3.1
 
 library
   ghc-options: -Wall -O2 -fno-warn-orphans
@@ -35,7 +35,7 @@ library
   build-depends:
       base >= 4.0 && < 5.0
     , bytestring >= 0.9
-    , text >= 0.1 && < 0.12
+    , text
 
   build-tools:
     c2hs >= 0.15
@@ -69,6 +69,7 @@ library
     CPython.Protocols.Mapping
     CPython.Protocols.Number
     CPython.Protocols.Object
+    CPython.Protocols.Object.Enums
     CPython.Protocols.Sequence
     CPython.Constants
     CPython.Reflection

@@ -109,7 +109,12 @@ castToNumber obj =
 		then Just $ unsafeCastToNumber obj
 		else Nothing
 
-{# fun PyNumber_Add as add
+add :: (Number a, Number b) => a -> b -> IO SomeNumber
+add = c_add
+
+-- c2hs won't accept functions named "add" any more, so have it generate
+-- c_add and then wrap that manually.
+{# fun PyNumber_Add as c_add
 	`(Number a, Number b)' =>
 	{ withObject* `a'
 	, withObject* `b'
