@@ -19,12 +19,12 @@ extra-source-files:
   cbits/hscpython-shim.h
 
 source-repository head
-  type: bazaar
-  location: https://john-millikin.com/branches/haskell-cpython/3.3/
+  type: git
+  location: https://john-millikin.com/code/haskell-cpython/
 
 source-repository this
-  type: bazaar
-  location: https://john-millikin.com/branches/haskell-cpython/3.3/
+  type: git
+  location: https://john-millikin.com/code/haskell-cpython/
   tag: haskell-cpython_3.3.1
 
 library
