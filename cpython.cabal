@@ -1,5 +1,5 @@
 name: cpython
-version: 3.3.1
+version: 3.4.0
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
@@ -25,7 +25,7 @@ source-repository head
 source-repository this
   type: git
   location: https://john-millikin.com/code/haskell-cpython/
-  tag: haskell-cpython_3.3.1
+  tag: haskell-cpython_3.4.0
 
 library
   ghc-options: -Wall -O2 -fno-warn-orphans
@@ -81,4 +81,4 @@ library
   c-sources: cbits/hscpython-shim.c
   include-dirs: cbits
 
-  pkgconfig-depends: python-3.3
+  pkgconfig-depends: python-3.4
