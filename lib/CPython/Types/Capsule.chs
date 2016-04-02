@@ -18,7 +18,7 @@
 module CPython.Types.Capsule
 	( Capsule
 	, capsuleType
-	--, new
+	, new
 	, getPointer
 	--, getDestructor
 	, getContext
@@ -36,8 +36,9 @@ module CPython.Types.Capsule
 import           Data.Text (Text)
 
 import           CPython.Internal hiding (new)
+import           Foreign.Concurrent
 
--- type Destructor = Ptr () -> IO ()
+type Destructor = Ptr () -> IO ()
 newtype Capsule = Capsule (ForeignPtr Capsule)
 
 instance Object Capsule where
@@ -50,8 +51,14 @@ instance Concrete Capsule where
 {# fun pure unsafe hscpython_PyCapsule_Type as capsuleType
 	{} -> `Type' peekStaticObject* #}
 
--- new :: Ptr () -> Maybe Text -> Destructor -> IO Capsule
--- new = undefined
+new :: Ptr () -> Maybe Text -> Destructor -> IO Capsule
+new pointer name destructor = maybeWith withText name $ \namePtr -> do
+    desturctorPtr <- mkDestructor destructor
+    capsulePtr <- {# call PyCapsule_New as ^ #} pointer namePtr desturctorPtr
+    stealObject capsulePtr
+
+foreign import ccall "wrapper"
+  mkDestructor :: Destructor -> IO (FunPtr Destructor)
 
 -- | Retrieve the pointer stored in the capsule. On failure, throws an
 -- exception.
