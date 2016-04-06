@@ -74,8 +74,6 @@ library
     CPython.Constants
     CPython.Reflection
     CPython.System
-
-  other-modules:
     CPython.Internal
 
   c-sources: cbits/hscpython-shim.c
