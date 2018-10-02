@@ -165,6 +165,9 @@ install:
 
 script:
 - |
+  PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}
+  echo $PKG_CONFIG_PATH
+  export PKG_CONFIG_PATH
   set -ex
   case "$BUILD" in
     stack)
