@@ -134,6 +134,9 @@ install:
 - if [ -f configure.ac ]; then autoreconf -i; fi
 - |
   set -ex
+  PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}
+  echo $PKG_CONFIG_PATH
+  export PKG_CONFIG_PATH
   case "$BUILD" in
     stack)
       # Add in extra-deps for older snapshots, as necessary
@@ -165,10 +168,10 @@ install:
 
 script:
 - |
+  set -ex
   PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}
   echo $PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
-  set -ex
   case "$BUILD" in
     stack)
       stack --no-terminal $ARGS test --bench --no-run-benchmarks --haddock --no-haddock-deps
