@@ -134,7 +134,7 @@ install:
 - if [ -f configure.ac ]; then autoreconf -i; fi
 - |
   set -ex
-  PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}
+  PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
   echo $PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
   case "$BUILD" in
@@ -169,7 +169,7 @@ install:
 script:
 - |
   set -ex
-  PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}
+  PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
   echo $PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
   case "$BUILD" in
