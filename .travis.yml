@@ -183,6 +183,7 @@ script:
       for dir in $PACKAGES
       do
         cd $dir
+        cabal install c2hs
         cabal check || [ "$CABALVER" == "1.16" ]
         cabal sdist
         PKGVER=$(cabal info . | awk '{print $2;exit}')
