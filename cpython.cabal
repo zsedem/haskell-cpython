@@ -81,4 +81,4 @@ library
   c-sources: cbits/hscpython-shim.c
   include-dirs: cbits
 
-  pkgconfig-depends: python-3.5
+  pkgconfig-depends: python-3.7
