@@ -18,6 +18,9 @@ sudo: required
 dist: xenial
 
 python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
   - "3.7"
 
 # Caching so the next build will be fast too.
