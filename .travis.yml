@@ -17,12 +17,6 @@ sudo: required
 
 dist: xenial
 
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7"
-
 # Caching so the next build will be fast too.
 cache:
   directories:
@@ -46,42 +40,42 @@ matrix:
   # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
   # variable, such as using --stack-yaml to point to a different file.
   - env: BUILD=stack ARGS=""
-    python: "3.4"
+    python: 3.4
     compiler: ": #stack default"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS=""
-    python: "3.5"
+    python: 3.5
     compiler: ": #stack default"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS=""
-    python: "3.6"
+    python: 3.6
     compiler: ": #stack default"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS=""
-    python: "3.7"
+    python: 3.7
     compiler: ": #stack default"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver lts-9"
-    python: "3.7"
+    python: 3.7
     compiler: ": #stack 8.0.2"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver lts-11"
-    python: "3.7"
+    python: 3.7
     compiler: ": #stack 8.2.2"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver lts-12"
-    python: "3.7"
+    python: 3.7
     compiler: ": #stack 8.4.3"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver nightly"
-    python: "3.7"
+    python: 3.7
     compiler: ": #stack nightly"
     addons: {apt: {packages: [ pkg-config]}}
 
