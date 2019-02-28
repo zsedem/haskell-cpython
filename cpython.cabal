@@ -1,5 +1,5 @@
 name: cpython
-version: 3.5.0
+version: 3.7.1
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
@@ -81,4 +81,4 @@ library
   c-sources: cbits/hscpython-shim.c
   include-dirs: cbits
 
-  pkgconfig-depends: python-3.5
+  pkgconfig-depends: python3
