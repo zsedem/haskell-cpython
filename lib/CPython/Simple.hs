@@ -7,6 +7,7 @@ module CPython.Simple where
 import CPython.Simple.Instances
 
 import Control.Exception (catch, SomeException, throwIO)
+import Data.Semigroup ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
 import System.IO (hPutStrLn, stderr)
