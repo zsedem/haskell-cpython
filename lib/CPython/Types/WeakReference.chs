@@ -16,12 +16,12 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.WeakReference
-	( Reference
-	, Proxy
-	, newReference
-	, newProxy
-	, getObject
-	) where
+  ( Reference
+  , Proxy
+  , newReference
+  , newProxy
+  , getObject
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -29,13 +29,13 @@ import           CPython.Internal
 
 newtype Reference = Reference (ForeignPtr Reference)
 instance Object Reference where
-	toObject (Reference x) = SomeObject x
-	fromForeignPtr = Reference
+  toObject (Reference x) = SomeObject x
+  fromForeignPtr = Reference
 
 newtype Proxy = Proxy (ForeignPtr Proxy)
 instance Object Proxy where
-	toObject (Proxy x) = SomeObject x
-	fromForeignPtr = Proxy
+  toObject (Proxy x) = SomeObject x
+  fromForeignPtr = Proxy
 
 -- | Return a weak reference for the object. This will always return a new
 -- reference, but is not guaranteed to create a new object; an existing
@@ -46,10 +46,10 @@ instance Object Proxy where
 -- /callback/ is not callable, this will throw a @TypeError@.
 newReference :: (Object obj, Object callback) => obj -> Maybe callback -> IO Reference
 newReference obj cb =
-	withObject obj $ \objPtr ->
-	maybeWith withObject cb $ \cbPtr ->
-	{# call PyWeakref_NewRef as ^ #} objPtr cbPtr
-	>>= stealObject
+  withObject obj $ \objPtr ->
+  maybeWith withObject cb $ \cbPtr ->
+  {# call PyWeakref_NewRef as ^ #} objPtr cbPtr
+  >>= stealObject
 
 -- | Return a weak reference proxy for the object. This will always return a
 -- new reference, but is not guaranteed to create a new object; an existing
@@ -60,13 +60,13 @@ newReference obj cb =
 -- callable, this will throw a @TypeError@.
 newProxy :: (Object obj, Object callback) => obj -> Maybe callback -> IO Proxy
 newProxy obj cb =
-	withObject obj $ \objPtr ->
-	maybeWith withObject cb $ \cbPtr ->
-	{# call PyWeakref_NewProxy as ^ #} objPtr cbPtr
-	>>= stealObject
+  withObject obj $ \objPtr ->
+  maybeWith withObject cb $ \cbPtr ->
+  {# call PyWeakref_NewProxy as ^ #} objPtr cbPtr
+  >>= stealObject
 
 -- | Return the referenced object from a weak reference. If the referent is
 -- no longer live, returns @None@.
 {# fun PyWeakref_GetObject as getObject
-	{ withObject* `Reference'
-	} -> `SomeObject' peekObject* #}
+  { withObject* `Reference'
+  } -> `SomeObject' peekObject* #}

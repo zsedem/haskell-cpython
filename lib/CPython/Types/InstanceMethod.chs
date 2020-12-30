@@ -16,11 +16,11 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.InstanceMethod
-	( InstanceMethod
-	, instanceMethodType
-	, new
-	, function
-	) where
+  ( InstanceMethod
+  , instanceMethodType
+  , new
+  , function
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -29,20 +29,20 @@ import           CPython.Internal hiding (new)
 newtype InstanceMethod = InstanceMethod (ForeignPtr InstanceMethod)
 
 instance Object InstanceMethod where
-	toObject (InstanceMethod x) = SomeObject x
-	fromForeignPtr = InstanceMethod
+  toObject (InstanceMethod x) = SomeObject x
+  fromForeignPtr = InstanceMethod
 
 instance Concrete InstanceMethod where
-	concreteType _ = instanceMethodType
+  concreteType _ = instanceMethodType
 
 {# fun pure unsafe hscpython_PyInstanceMethod_Type as instanceMethodType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 {# fun PyInstanceMethod_New as new
-	`Object func' =>
-	{ withObject* `func'
-	} -> `InstanceMethod' stealObject* #}
+  `Object func' =>
+  { withObject* `func'
+  } -> `InstanceMethod' stealObject* #}
 
 {# fun PyInstanceMethod_Function as function
-	{ withObject* `InstanceMethod'
-	} -> `SomeObject' peekObject* #}
+  { withObject* `InstanceMethod'
+  } -> `SomeObject' peekObject* #}
