@@ -36,7 +36,7 @@ call
   -> IO a
 ```
 
-For example, if I wanted to wrap Python's `random.randint(a, b)`, I could write this:
+For example, if I wanted to wrap Python's `random.randint(low, high)`, I could write this:
 
 ```haskell
 randint :: Integer -> Integer -> IO Integer
@@ -55,7 +55,7 @@ uniform low high = do
 You can also use the `TypeApplications` language extension to do this, if needed.
 
 ```haskell
-call @Double random "uniform" [arg low, arg high] []
+call @Double "random" "uniform" [arg low, arg high] []
 ```
 
 Calling a function with mixed positional and keyword arguments is also fairly straightforward.
@@ -100,5 +100,5 @@ Here's how we can set `random.BPF` to some given number `n`
 
 ```haskell
 setBpf :: Integer -> IO ()
-setBpf n = setAttribute random "BPF" n
+setBpf n = setAttribute "random" "BPF" n
 ```
