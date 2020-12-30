@@ -73,6 +73,8 @@ library
     CPython.Protocols.Sequence
     CPython.Constants
     CPython.Reflection
+    CPython.Simple
+    CPython.Simple.Instances
     CPython.System
 
   other-modules:
