@@ -18,7 +18,7 @@ executable haskell-cpython-tests
   build-depends:
       base > 4.0 && < 5.0
     , bytestring >= 0.9
-    , chell >= 0.3 && < 0.4
+    , chell >= 0.3 && < 0.6
     , cpython
-    , text >= 0.11.1.5 && < 0.12
+    , text
     , transformers
