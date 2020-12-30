@@ -3,3 +3,5 @@
 *.swo
 *.swp
 *.swn
+
+stack.yaml.lock

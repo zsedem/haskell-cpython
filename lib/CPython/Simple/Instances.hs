@@ -35,7 +35,7 @@ easyFromPy
   -> IO c
 easyFromPy conversion typename = conversion . castErr typename <=< Py.cast
   where castErr typename' = \case
-          Nothing -> error $ "FromPy could not cast to " <> T.unpack typename'
+          Nothing -> error $ "FromPy could not cast to " ++ T.unpack typename'
           Just x -> x
 
 instance ToPy Integer where
