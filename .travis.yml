@@ -59,23 +59,33 @@ matrix:
     compiler: ": #stack default"
     addons: {apt: {packages: [ pkg-config]}}
 
+  - env: BUILD=stack ARGS=""
+    python: 3.8
+    compiler: ": #stack default"
+    addons: {apt: {packages: [ pkg-config]}}
+
+  - env: BUILD=stack ARGS=""
+    python: 3.9
+    compiler: ": #stack default"
+    addons: {apt: {packages: [ pkg-config]}}
+
   - env: BUILD=stack ARGS="--resolver lts-9"
-    python: 3.7
+    python: 3.9
     compiler: ": #stack 8.0.2"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver lts-11"
-    python: 3.7
+    python: 3.9
     compiler: ": #stack 8.2.2"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver lts-12"
-    python: 3.7
+    python: 3.9
     compiler: ": #stack 8.4.3"
     addons: {apt: {packages: [ pkg-config]}}
 
   - env: BUILD=stack ARGS="--resolver nightly"
-    python: 3.7
+    python: 3.9
     compiler: ": #stack nightly"
     addons: {apt: {packages: [ pkg-config]}}
 
