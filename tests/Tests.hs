@@ -34,10 +34,10 @@ import System.Exit(exitSuccess)
 import Foreign.StablePtr
 import Foreign.Ptr
 import Foreign.C.String
-import Control.Exception(handle)
+import Control.Exception(handle, SomeException)
 
 main :: IO ()
-main = handle pyExceptionHandler $ do
+main = verboseExc $ handle pyExceptionHandler $ do
   Py.initialize
   newHome <- liftIO Py.getPythonHome
   print newHome
@@ -58,3 +58,8 @@ main = handle pyExceptionHandler $ do
     pyExceptionHandlerWithoutPythonTraceback exception = do
         print exception
         putStrLn "Unexpected Python exception (Please report a bug)"
+
+    verboseExc ioAction = handleEverything (\exc -> print exc >> error "Unexpected error") ioAction
+
+    handleEverything :: (SomeException -> IO a) -> IO a -> IO a
+    handleEverything = handle
