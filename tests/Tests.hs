@@ -28,7 +28,6 @@ import           CPython.Types.Module
 main :: IO ()
 main = do
   CPython.initialize
-  liftIO (setPythonHome (Just "/python/home"))
   newHome <- liftIO getPythonHome
   print newHome
   _ <- liftIO (importModule "os")
