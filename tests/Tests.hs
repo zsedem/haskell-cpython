@@ -20,16 +20,41 @@ module Main
   ( main ) where
 
 import           Control.Monad.IO.Class (liftIO)
-import qualified Data.Text as Text
 
-import           CPython
-import           CPython.Types.Module
+import qualified CPython as Py
+import qualified CPython.Types.Module as Py
+import qualified CPython.Protocols.Object as Py
+import qualified CPython.Types.Capsule as PyCapsule
+import qualified CPython.Types.Dictionary as PyDict
+import qualified CPython.Types.Tuple as PyTuple
+import qualified CPython.Types.Unicode as PyUnicode
+import qualified CPython.Types.Exception as PyExc
+import Data.Text hiding(take)
+import System.Exit(exitSuccess)
+import Foreign.StablePtr
+import Foreign.Ptr
+import Foreign.C.String
+import Control.Exception(handle)
 
 main :: IO ()
-main = do
-  CPython.initialize
-  newHome <- liftIO getPythonHome
+main = handle pyExceptionHandler $ do
+  Py.initialize
+  newHome <- liftIO Py.getPythonHome
   print newHome
-  _ <- liftIO (importModule "os")
-  CPython.finalize
-
+  _ <- liftIO (Py.importModule "os")
+  Py.finalize
+  where
+    pyExceptionHandler :: PyExc.Exception -> IO ()
+    pyExceptionHandler exception = handle pyExceptionHandlerWithoutPythonTraceback $ do
+        tracebackModule <- Py.importModule "traceback"
+        print_exc <- PyUnicode.toUnicode "print_exception" >>= Py.getAttribute tracebackModule
+        kwargs <- PyDict.new
+        args <- case PyExc.exceptionTraceback exception of
+          Just tb -> PyTuple.toTuple [PyExc.exceptionType exception, PyExc.exceptionValue exception, tb]
+          _ -> PyTuple.toTuple [PyExc.exceptionType exception, PyExc.exceptionValue exception]
+        _ <- Py.call print_exc args kwargs
+        return ()
+    pyExceptionHandlerWithoutPythonTraceback :: PyExc.Exception -> IO ()
+    pyExceptionHandlerWithoutPythonTraceback exception = do
+        print exception
+        putStrLn "Unexpected Python exception (Please report a bug)"
