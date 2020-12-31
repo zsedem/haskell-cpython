@@ -16,13 +16,13 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --
 module CPython.Reflection
-	( getBuiltins
-	, getLocals
-	, getGlobals
-	, getFrame
-	, getFunctionName
-	, getFunctionDescription
-	) where
+  ( getBuiltins
+  , getLocals
+  , getGlobals
+  , getFrame
+  , getFunctionName
+  , getFunctionDescription
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -33,7 +33,7 @@ import           CPython.Internal
 -- | Return a 'Dictionary' of the builtins in the current execution frame,
 -- or the interpreter of the thread state if no frame is currently executing.
 {# fun PyEval_GetBuiltins as getBuiltins
-	{} -> `Dictionary' peekObject* #}
+  {} -> `Dictionary' peekObject* #}
 
 -- | Return a 'Dictionary' of the local variables in the current execution
 -- frame, or 'Nothing' if no frame is currently executing.
@@ -53,15 +53,15 @@ getFrame = {# call PyEval_GetFrame as ^#} >>= maybePeek peekObject
 -- | Return the name of /func/ if it is a function, class or instance object,
 -- else the name of /func/'s type.
 {# fun PyEval_GetFuncName as getFunctionName
-	`Object func' =>
-	{ withObject* `func'
-	} -> `Text' peekText* #}
+  `Object func' =>
+  { withObject* `func'
+  } -> `Text' peekText* #}
 
 -- | Return a description string, depending on the type of func. Return
 -- values include @\"()\"@ for functions and methods, @\"constructor\"@,
 -- @\"instance\"@, and @\"object\"@. Concatenated with the result of
 -- 'getFunctionName', the result will be a description of /func/.
 {# fun PyEval_GetFuncDesc as getFunctionDescription
-	`Object func' =>
-	{ withObject* `func'
-	} -> `Text' peekText* #}
+  `Object func' =>
+  { withObject* `func'
+  } -> `Text' peekText* #}

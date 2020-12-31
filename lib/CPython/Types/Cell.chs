@@ -16,12 +16,12 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Cell
-	( Cell
-	, cellType
-	, new
-	, get
-	, set
-	) where
+  ( Cell
+  , cellType
+  , new
+  , get
+  , set
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -30,34 +30,34 @@ import           CPython.Internal hiding (new)
 newtype Cell = Cell (ForeignPtr Cell)
 
 instance Object Cell where
-	toObject (Cell x) = SomeObject x
-	fromForeignPtr = Cell
+  toObject (Cell x) = SomeObject x
+  fromForeignPtr = Cell
 
 instance Concrete Cell where
-	concreteType _ = cellType
+  concreteType _ = cellType
 
 {# fun pure unsafe hscpython_PyCell_Type as cellType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 -- | Create and return a new cell containing the value /obj/.
 new :: Object obj => Maybe obj -> IO Cell
 new obj =
-	maybeWith withObject obj $ \objPtr ->
-	{# call PyCell_New as ^ #} objPtr
-	>>= stealObject
+  maybeWith withObject obj $ \objPtr ->
+  {# call PyCell_New as ^ #} objPtr
+  >>= stealObject
 
 -- | Return the contents of a cell.
 get :: Cell -> IO (Maybe SomeObject)
 get cell =
-	withObject cell $ \cellPtr ->
-	{# call PyCell_Get as ^ #} cellPtr
-	>>= maybePeek stealObject
+  withObject cell $ \cellPtr ->
+  {# call PyCell_Get as ^ #} cellPtr
+  >>= maybePeek stealObject
 
 -- | Set the contents of a cell to /obj/. This releases the reference to any
 -- current content of the cell.
 set :: Object obj => Cell -> Maybe obj -> IO ()
 set cell obj =
-	withObject cell $ \cellPtr ->
-	maybeWith withObject obj $ \objPtr ->
-	{# call PyCell_Set as ^ #} cellPtr objPtr
-	>>= checkStatusCode
+  withObject cell $ \cellPtr ->
+  maybeWith withObject obj $ \objPtr ->
+  {# call PyCell_Set as ^ #} cellPtr objPtr
+  >>= checkStatusCode

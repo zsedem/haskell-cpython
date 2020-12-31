@@ -16,10 +16,10 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Exception
-	( Exception
-	, exceptionType
-	, exceptionValue
-	, exceptionTraceback
-	) where
+  ( Exception
+  , exceptionType
+  , exceptionValue
+  , exceptionTraceback
+  ) where
 
 import           CPython.Internal

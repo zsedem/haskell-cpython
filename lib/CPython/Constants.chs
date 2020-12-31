@@ -16,13 +16,13 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Constants
-	( none
-	, true
-	, false
-	, isNone
-	, isTrue
-	, isFalse
-	) where
+  ( none
+  , true
+  , false
+  , isNone
+  , isTrue
+  , isFalse
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -30,24 +30,24 @@ import           CPython.Internal
 
 -- | The Python @None@ object, denoting lack of value.
 {# fun unsafe hscpython_Py_None as none
-	{} -> `SomeObject' peekObject* #}
+  {} -> `SomeObject' peekObject* #}
 
 -- | The Python @True@ object.
 {# fun unsafe hscpython_Py_True as true
-	{} -> `SomeObject' peekObject* #}
+  {} -> `SomeObject' peekObject* #}
 
 -- | The Python @False@ object.
 {# fun unsafe hscpython_Py_False as false
-	{} -> `SomeObject' peekObject* #}
+  {} -> `SomeObject' peekObject* #}
 
 {# fun pure unsafe hscpython_Py_None as rawNone
-	{} -> `Ptr ()' id #}
+  {} -> `Ptr ()' id #}
 
 {# fun pure unsafe hscpython_Py_True as rawTrue
-	{} -> `Ptr ()' id #}
+  {} -> `Ptr ()' id #}
 
 {# fun pure unsafe hscpython_Py_False as rawFalse
-	{} -> `Ptr ()' id #}
+  {} -> `Ptr ()' id #}
 
 isNone :: SomeObject -> IO Bool
 isNone obj = withObject obj $ \ptr -> return $ ptr == rawNone

@@ -17,7 +17,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module Main
-	( main ) where
+  ( main ) where
 
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as Text

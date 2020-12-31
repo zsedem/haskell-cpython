@@ -16,11 +16,11 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Slice
-	( Slice
-	, sliceType
-	, new
-	, getIndices
-	) where
+  ( Slice
+  , sliceType
+  , new
+  , getIndices
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -31,14 +31,14 @@ import           CPython.Internal hiding (new)
 newtype Slice = Slice (ForeignPtr Slice)
 
 instance Object Slice where
-	toObject (Slice x) = SomeObject x
-	fromForeignPtr = Slice
+  toObject (Slice x) = SomeObject x
+  fromForeignPtr = Slice
 
 instance Concrete Slice where
-	concreteType _ = sliceType
+  concreteType _ = sliceType
 
 {# fun pure unsafe hscpython_PySlice_Type as sliceType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 -- | Return a new slice object with the given values. The /start/, /stop/,
 -- and /step/ parameters are used as the values of the slice object
@@ -46,11 +46,11 @@ instance Concrete Slice where
 -- case @None@ will be used for the corresponding attribute.
 new :: (Object start, Object stop, Object step) => Maybe start -> Maybe stop -> Maybe step -> IO Slice
 new start stop step =
-	maybeWith withObject start $ \startPtr ->
-	maybeWith withObject stop $ \stopPtr ->
-	maybeWith withObject step $ \stepPtr ->
-	{# call PySlice_New as ^ #} startPtr stopPtr stepPtr
-	>>= stealObject
+  maybeWith withObject start $ \startPtr ->
+  maybeWith withObject stop $ \stopPtr ->
+  maybeWith withObject step $ \stepPtr ->
+  {# call PySlice_New as ^ #} startPtr stopPtr stepPtr
+  >>= stealObject
 
 -- | Retrieve the start, stop, step, and slice length from a 'Slice',
 -- assuming a sequence of the given length.
@@ -58,17 +58,17 @@ getIndices :: Slice
            -> Integer -- ^ Sequence length
            -> IO (Integer, Integer, Integer, Integer)
 getIndices slice length =
-	withObject slice $ \slicePtr ->
-	let length' = fromIntegral length in
-	alloca $ \startPtr ->
-	alloca $ \stopPtr ->
-	alloca $ \stepPtr ->
-	alloca $ \sliceLenPtr -> do
-	{# call PySlice_GetIndicesEx as ^ #}
-		slicePtr length' startPtr stopPtr stepPtr sliceLenPtr
-		>>= checkStatusCode
-	start <- fmap toInteger $ peek startPtr
-	stop <- fmap toInteger $ peek stopPtr
-	step <- fmap toInteger $ peek stepPtr
-	sliceLen <- fmap toInteger $ peek sliceLenPtr
-	return (start, stop, step, sliceLen)
+  withObject slice $ \slicePtr ->
+  let length' = fromIntegral length in
+  alloca $ \startPtr ->
+  alloca $ \stopPtr ->
+  alloca $ \stepPtr ->
+  alloca $ \sliceLenPtr -> do
+  {# call PySlice_GetIndicesEx as ^ #}
+    slicePtr length' startPtr stopPtr stepPtr sliceLenPtr
+    >>= checkStatusCode
+  start <- fmap toInteger $ peek startPtr
+  stop <- fmap toInteger $ peek stopPtr
+  step <- fmap toInteger $ peek stepPtr
+  sliceLen <- fmap toInteger $ peek sliceLenPtr
+  return (start, stop, step, sliceLen)

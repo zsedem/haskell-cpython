@@ -16,13 +16,13 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.System
-	( getObject
-	, setObject
-	, deleteObject
-	, resetWarnOptions
-	, addWarnOption
-	, setPath
-	) where
+  ( getObject
+  , setObject
+  , deleteObject
+  , resetWarnOptions
+  , addWarnOption
+  , setPath
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -34,37 +34,37 @@ import           CPython.Internal
 -- not exist.
 getObject :: Text -> IO (Maybe SomeObject)
 getObject name =
-	withText name $ \cstr -> do
-	raw <- {# call PySys_GetObject as ^ #} cstr
-	maybePeek peekObject raw
+  withText name $ \cstr -> do
+  raw <- {# call PySys_GetObject as ^ #} cstr
+  maybePeek peekObject raw
 
 -- getFile
 
 -- | Set /name/ in the @sys@ module to a value.
 setObject :: Object a => Text -> a -> IO ()
 setObject name v =
-	withText name $ \cstr ->
-	withObject v $ \vPtr ->
-	{# call PySys_SetObject as ^ #} cstr vPtr
-	>>= checkStatusCode
+  withText name $ \cstr ->
+  withObject v $ \vPtr ->
+  {# call PySys_SetObject as ^ #} cstr vPtr
+  >>= checkStatusCode
 
 -- | Delete /name/ from the @sys@ module.
 deleteObject :: Text -> IO ()
 deleteObject name =
-	withText name $ \cstr ->
-	{# call PySys_SetObject as ^ #} cstr nullPtr
-	>>= checkStatusCode
+  withText name $ \cstr ->
+  {# call PySys_SetObject as ^ #} cstr nullPtr
+  >>= checkStatusCode
 
 -- | Reset @sys.warnoptions@ to an empty list.
 {# fun PySys_ResetWarnOptions as resetWarnOptions
-	{} -> `()' id #}
+  {} -> `()' id #}
 
 -- | Add an entry to @sys.warnoptions@.
 addWarnOption :: Text -> IO ()
 addWarnOption str = withTextW str pySysAddWarnOption
 
 foreign import ccall safe "hscpython-shim.h PySys_AddWarnOption"
-	pySysAddWarnOption :: CWString -> IO ()
+  pySysAddWarnOption :: CWString -> IO ()
 
 -- | Set @sys.path@ to a list object of paths found in the parameter, which
 -- should be a list of paths separated with the platform's search path
@@ -73,4 +73,4 @@ setPath :: Text -> IO ()
 setPath path = withTextW path pySysSetPath
 
 foreign import ccall safe "hscpython-shim.h PySys_SetPath"
-	pySysSetPath :: CWString -> IO ()
+  pySysSetPath :: CWString -> IO ()
