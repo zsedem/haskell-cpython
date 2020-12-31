@@ -6,11 +6,10 @@ module CPython.Simple where
 
 import CPython.Simple.Instances
 
-import Control.Exception (catch, SomeException, throwIO)
+import Control.Exception (catch, SomeException)
 import Data.Semigroup ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
-import System.IO (hPutStrLn, stderr)
 
 import qualified CPython as Py
 import qualified CPython.Protocols.Object as Py
@@ -29,16 +28,16 @@ arg = Arg
 
 initialize :: IO ()
 initialize = Py.initialize `catch`
-  \(_ :: SomeException) -> error $ "Couldn't initialize.\nMaybe <Python.h> is missing?"
+  \(_ :: SomeException) -> error $
+    "Couldn't initialize.\nMaybe <Python.h> is missing?"
 
 importModule :: Text -> IO Py.Module
 importModule module_ = Py.importModule module_ `catch`
-  \(e :: SomeException) -> do
-    hPutStrLn stderr $
+  \(_ :: SomeException) -> do
+    error $
       "Error: Couldn't import Python module named `" <> T.unpack module_ <> "`\n" <>
       "Maybe it's a typo, or `" <> T.unpack module_ <> "` isn't installed?\n" <>
       "Check with `python -m " <> T.unpack module_ <> "`"
-    throwIO e
 
 call
   :: FromPy a
@@ -55,12 +54,12 @@ call moduleName func args kwargs = (do
   pyKwargs <- toPyKwargs kwargs
   result <- Py.call pyFunc pyArgsTuple pyKwargs
   fromPy result) `catch`
-    \(e :: SomeException) -> do
-      hPutStrLn stderr $
+    \(_ :: SomeException) -> do
+      error $
         "Error when trying to call Python function named `" <> T.unpack func <> "`\n" <>
-        "Maybe the function name is misspelled, or the arguments aren't correct?\n" <>
+        "From the `" <> T.unpack moduleName <> "` module\n" <>
+        "Maybe something is misspelled, or the arguments aren't correct?\n" <>
         "It's also possible the function just threw a Python exception"
-      throwIO e
   where
     toPyKwargs :: [(Text, Arg)] -> IO Py.Dictionary
     toPyKwargs dict = do
