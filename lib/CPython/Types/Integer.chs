@@ -16,11 +16,11 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Integer
-	( Integer
-	, integerType
-	, toInteger
-	, fromInteger
-	) where
+  ( Integer
+  , integerType
+  , toInteger
+  , fromInteger
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -35,32 +35,32 @@ import qualified CPython.Types.Unicode as U
 newtype Integer = Integer (ForeignPtr Integer)
 
 instance Object Integer where
-	toObject (Integer x) = SomeObject x
-	fromForeignPtr = Integer
+  toObject (Integer x) = SomeObject x
+  fromForeignPtr = Integer
 
 instance Concrete Integer where
-	concreteType _ = integerType
+  concreteType _ = integerType
 
 {# fun pure unsafe hscpython_PyLong_Type as integerType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 toInteger :: Prelude.Integer -> IO Integer
 toInteger int = do
-	let longlong = fromIntegral int
-	let [_, min', max'] = [longlong, minBound, maxBound]
-	stealObject =<< if Prelude.toInteger min' < int && int < Prelude.toInteger max'
-		then {# call PyLong_FromLongLong as ^ #} longlong
-		else withCString (show int) $ \cstr ->
-			{# call PyLong_FromString as ^ #} cstr nullPtr 10
+  let longlong = fromIntegral int
+  let [_, min', max'] = [longlong, minBound, maxBound]
+  stealObject =<< if Prelude.toInteger min' < int && int < Prelude.toInteger max'
+    then {# call PyLong_FromLongLong as ^ #} longlong
+    else withCString (show int) $ \cstr ->
+      {# call PyLong_FromString as ^ #} cstr nullPtr 10
 
 fromInteger :: Integer -> IO Prelude.Integer
 fromInteger py = do
-	(long, overflow) <- (withObject py $ \pyPtr ->
-		alloca $ \overflowPtr -> do
-		poke overflowPtr 0
-		long <- {# call PyLong_AsLongAndOverflow as ^ #} pyPtr overflowPtr
-		overflow <- peek overflowPtr
-		return (long, overflow))
-	if overflow == 0
-		then return $ Prelude.toInteger long
-		else fmap (read . T.unpack) $ U.fromUnicode =<< O.string py
+  (long, overflow) <- (withObject py $ \pyPtr ->
+    alloca $ \overflowPtr -> do
+    poke overflowPtr 0
+    long <- {# call PyLong_AsLongAndOverflow as ^ #} pyPtr overflowPtr
+    overflow <- peek overflowPtr
+    return (long, overflow))
+  if overflow == 0
+    then return $ Prelude.toInteger long
+    else fmap (read . T.unpack) $ U.fromUnicode =<< O.string py

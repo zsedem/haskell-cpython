@@ -17,12 +17,12 @@
 --
 
 module CPython.Types.Method
-	( Method
-	, methodType
-	, new
-	, function
-	, self
-	) where
+  ( Method
+  , methodType
+  , new
+  , function
+  , self
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -31,25 +31,25 @@ import           CPython.Internal hiding (new)
 newtype Method = Method (ForeignPtr Method)
 
 instance Object Method where
-	toObject (Method x) = SomeObject x
-	fromForeignPtr = Method
+  toObject (Method x) = SomeObject x
+  fromForeignPtr = Method
 
 instance Concrete Method where
-	concreteType _ = methodType
+  concreteType _ = methodType
 
 {# fun pure unsafe hscpython_PyMethod_Type as methodType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 {# fun PyMethod_New as new
-	`(Object func, Object self)' =>
-	{ withObject* `func'
-	, withObject* `self'
-	} -> `Method' stealObject* #}
+  `(Object func, Object self)' =>
+  { withObject* `func'
+  , withObject* `self'
+  } -> `Method' stealObject* #}
 
 {# fun PyMethod_Function as function
-	{ withObject* `Method'
-	} -> `SomeObject' peekObject* #}
+  { withObject* `Method'
+  } -> `SomeObject' peekObject* #}
 
 {# fun PyMethod_Self as self
-	{ withObject* `Method'
-	} -> `SomeObject' peekObject* #}
+  { withObject* `Method'
+  } -> `SomeObject' peekObject* #}

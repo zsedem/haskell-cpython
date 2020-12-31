@@ -16,20 +16,20 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Capsule
-	( Capsule
-	, capsuleType
-	--, new
-	, getPointer
-	--, getDestructor
-	, getContext
-	, getName
-	, importNamed
-	, isValid
-	, setPointer
-	--, setDestructor
-	, setContext
-	--, setName
-	) where
+  ( Capsule
+  , capsuleType
+  --, new
+  , getPointer
+  --, getDestructor
+  , getContext
+  , getName
+  , importNamed
+  , isValid
+  , setPointer
+  --, setDestructor
+  , setContext
+  --, setName
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -41,14 +41,14 @@ import           CPython.Internal hiding (new)
 newtype Capsule = Capsule (ForeignPtr Capsule)
 
 instance Object Capsule where
-	toObject (Capsule x) = SomeObject x
-	fromForeignPtr = Capsule
+  toObject (Capsule x) = SomeObject x
+  fromForeignPtr = Capsule
 
 instance Concrete Capsule where
-	concreteType _ = capsuleType
+  concreteType _ = capsuleType
 
 {# fun pure unsafe hscpython_PyCapsule_Type as capsuleType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 -- new :: Ptr () -> Maybe Text -> Destructor -> IO Capsule
 -- new = undefined
@@ -62,9 +62,9 @@ instance Concrete Capsule where
 -- names.
 getPointer :: Capsule -> Maybe Text -> IO (Ptr ())
 getPointer py name =
-	withObject py $ \pyPtr ->
-	maybeWith withText name $ \namePtr ->
-	{# call PyCapsule_GetPointer as ^ #} pyPtr namePtr
+  withObject py $ \pyPtr ->
+  maybeWith withText name $ \namePtr ->
+  {# call PyCapsule_GetPointer as ^ #} pyPtr namePtr
 
 -- getDestructor :: Capsule -> IO (Maybe Destructor)
 -- getDestructor = undefined
@@ -72,28 +72,28 @@ getPointer py name =
 -- | Return the current context stored in the capsule, which might be @NULL@.
 getContext :: Capsule -> IO (Ptr ())
 getContext py =
-	withObject py $ \pyPtr -> do
-	{# call PyErr_Clear as ^ #}
-	ptr <- {# call PyCapsule_GetContext as ^ #} pyPtr
-	if ptr /= nullPtr
-		then return ptr
-		else do
-			exc <- {# call PyErr_Occurred as ^ #}
-			exceptionIf $ exc /= nullPtr
-			return ptr
+  withObject py $ \pyPtr -> do
+  {# call PyErr_Clear as ^ #}
+  ptr <- {# call PyCapsule_GetContext as ^ #} pyPtr
+  if ptr /= nullPtr
+    then return ptr
+    else do
+      exc <- {# call PyErr_Occurred as ^ #}
+      exceptionIf $ exc /= nullPtr
+      return ptr
 
 -- | Return the current name stored in the capsule, which might be 'Nothing'.
 getName :: Capsule -> IO (Maybe Text)
 getName py =
-	withObject py $ \pyPtr -> do
-	{# call PyErr_Clear as ^ #}
-	ptr <- {# call PyCapsule_GetName as ^ #} pyPtr
-	if ptr /= nullPtr
-		then Just `fmap` peekText ptr
-		else do
-			exc <- {# call PyErr_Occurred as ^ #}
-			exceptionIf $ exc /= nullPtr
-			return Nothing
+  withObject py $ \pyPtr -> do
+  {# call PyErr_Clear as ^ #}
+  ptr <- {# call PyCapsule_GetName as ^ #} pyPtr
+  if ptr /= nullPtr
+    then Just `fmap` peekText ptr
+    else do
+      exc <- {# call PyErr_Occurred as ^ #}
+      exceptionIf $ exc /= nullPtr
+      return Nothing
 
 -- | Import a pointer to a C object from a capsule attribute in a module.
 -- The name parameter should specify the full name to the attribute, as in
@@ -107,16 +107,16 @@ getName py =
 -- non-blocking mode, returns 'Nothing'.
 importNamed :: Text -> Bool -> IO (Maybe (Ptr ()))
 importNamed name block =
-	withText name $ \namePtr ->
-	let noBlock = cFromBool (not block) in do
-	{# call PyErr_Clear as ^ #}
-	ptr <- {# call PyCapsule_Import as ^ #} namePtr noBlock
-	if ptr /= nullPtr
-		then return $ Just ptr
-		else do
-			exc <- {# call PyErr_Occurred as ^ #}
-			exceptionIf $ exc /= nullPtr
-			return Nothing
+  withText name $ \namePtr ->
+  let noBlock = cFromBool (not block) in do
+  {# call PyErr_Clear as ^ #}
+  ptr <- {# call PyCapsule_Import as ^ #} namePtr noBlock
+  if ptr /= nullPtr
+    then return $ Just ptr
+    else do
+      exc <- {# call PyErr_Occurred as ^ #}
+      exceptionIf $ exc /= nullPtr
+      return Nothing
 
 -- | Determines whether or not a capsule is valid. A valid capsule's type is
 -- 'capsuleType', has a non-NULL pointer stored in it, and its internal name
@@ -127,25 +127,25 @@ importNamed name block =
 -- accessors (any function starting with @get@) are guaranteed to succeed.
 isValid :: Capsule -> Maybe Text -> IO Bool
 isValid py name =
-	withObject py $ \pyPtr ->
-	maybeWith withText name $ \namePtr ->
-	{# call PyCapsule_IsValid as ^ #} pyPtr namePtr
-	>>= checkBoolReturn
+  withObject py $ \pyPtr ->
+  maybeWith withText name $ \namePtr ->
+  {# call PyCapsule_IsValid as ^ #} pyPtr namePtr
+  >>= checkBoolReturn
 
 -- | Set the void pointer inside the capsule. The pointer may not be @NULL@.
 {# fun PyCapsule_SetPointer as setPointer
-	{ withObject* `Capsule'
-	, id `Ptr ()'
-	} -> `()' checkStatusCode* #}
+  { withObject* `Capsule'
+  , id `Ptr ()'
+  } -> `()' checkStatusCode* #}
 
 -- setDestructor :: Capsule -> Maybe Destructor -> IO ()
 -- setDestructor = undefined
 
 -- | Set the context pointer inside the capsule.
 {# fun PyCapsule_SetContext as setContext
-	{ withObject* `Capsule'
-	, id `Ptr ()'
-	} -> `()' checkStatusCode* #}
+  { withObject* `Capsule'
+  , id `Ptr ()'
+  } -> `()' checkStatusCode* #}
 
 -- setName :: Capsule -> Maybe Text -> IO ()
 -- setName = undefined

@@ -1,13 +1,13 @@
 name: cpython
-version: 3.7.1
+version: 3.9.0
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
-maintainer: John Millikin <jmillikin@gmail.com>
+maintainer: Adam Zsigmond <zsedem@gmail.com>
 build-type: Simple
-cabal-version: >= 1.6
+cabal-version: >= 1.8
 category: Foreign
-homepage: https://john-millikin.com/software/haskell-python/
+homepage: https://github.com/zsedem/haskell-cpython
 
 synopsis: Bindings for libpython
 description:
@@ -20,12 +20,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://john-millikin.com/code/haskell-cpython/
-
-source-repository this
-  type: git
-  location: https://john-millikin.com/code/haskell-cpython/
-  tag: haskell-cpython_3.5.0
+  location: https://github.com/zsedem/haskell-cpython
 
 library
   ghc-options: -Wall -O2 -fno-warn-orphans
@@ -82,3 +77,17 @@ library
   include-dirs: cbits
 
   pkgconfig-depends: python3
+  default-language:    Haskell2010
+
+test-suite cpython-testsuite
+  type:        exitcode-stdio-1.0
+  main-is:     Tests.hs
+  ghc-options: -Wall -fno-warn-orphans
+  hs-source-dirs: tests
+
+  build-depends:
+      base > 4.0 && < 5.0
+    , text
+    , cpython
+  pkgconfig-depends: python3
+  default-language:    Haskell2010

@@ -1,8 +1,8 @@
-resolver: lts-12.10
+resolver: lts-16.27
 packages:
     - '.'
 flags: {}
 extra-package-dbs: []
 extra-deps: []
 nix:
-  packages: [python35, pkgconfig]
+  packages: [python3, pkgconfig]

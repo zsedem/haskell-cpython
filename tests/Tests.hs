@@ -17,75 +17,49 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module Main
-	( tests
-	, main
-	) where
+  ( main ) where
 
 import           Control.Monad.IO.Class (liftIO)
-import qualified Data.Text as Text
 
-import           Test.Chell
-
-import           CPython
-import           CPython.Types.Module
-
-suite_ProgramProperties :: Suite
-suite_ProgramProperties = suite "program-properties"
-	test_ProgramName
-	test_PythonHome
-
-test_ProgramName :: Test
-test_ProgramName = assertions "program-name" $ do
-	do
-		name <- liftIO getProgramName
-		$expect (Text.isPrefixOf "python" name)
-	do
-		before <- liftIO getProgramName
-		liftIO (setProgramName "")
-		after <- liftIO getProgramName
-		$expect (equal before after)
-	do
-		liftIO (setProgramName "cpython-tests")
-		after <- liftIO getProgramName
-		$expect (equal after "cpython-tests")
-
-test_PythonHome :: Test
-test_PythonHome = assertions "python-home" $ do
-	do
-		defaultHome <- liftIO getPythonHome
-		$expect (equal defaultHome Nothing)
-	
-	do
-		liftIO (setPythonHome (Just "/python/home"))
-		newHome <- liftIO getPythonHome
-		$expect (equal newHome (Just "/python/home"))
-	
-	do
-		liftIO (setPythonHome Nothing)
-		newHome <- liftIO getPythonHome
-		$expect (equal newHome Nothing)
-
-suite_Types :: Suite
-suite_Types = suite "types"
-	suite_Module
-
-suite_Module :: Suite
-suite_Module = suite "module"
-	test_ImportModule
-
-test_ImportModule :: Test
-test_ImportModule = assertions "importModule" $ do
-	_ <- liftIO (importModule "os")
-	return ()
-
-tests :: [Suite]
-tests =
-	[ suite_ProgramProperties
-	, suite_Types
-	]
+import qualified CPython as Py
+import qualified CPython.Types.Module as Py
+import qualified CPython.Protocols.Object as Py
+import qualified CPython.Types.Capsule as PyCapsule
+import qualified CPython.Types.Dictionary as PyDict
+import qualified CPython.Types.Tuple as PyTuple
+import qualified CPython.Types.Unicode as PyUnicode
+import qualified CPython.Types.Exception as PyExc
+import Data.Text hiding(take)
+import System.Exit(exitSuccess)
+import Foreign.StablePtr
+import Foreign.Ptr
+import Foreign.C.String
+import Control.Exception(handle, SomeException)
 
 main :: IO ()
-main = do
-	CPython.initialize
-	Test.Chell.defaultMain tests
-	CPython.finalize
+main = verboseExc $ handle pyExceptionHandler $ do
+  Py.initialize
+  newHome <- liftIO Py.getPythonHome
+  print newHome
+  _ <- liftIO (Py.importModule "os")
+  Py.finalize
+  where
+    pyExceptionHandler :: PyExc.Exception -> IO ()
+    pyExceptionHandler exception = handle pyExceptionHandlerWithoutPythonTraceback $ do
+        tracebackModule <- Py.importModule "traceback"
+        print_exc <- PyUnicode.toUnicode "print_exception" >>= Py.getAttribute tracebackModule
+        kwargs <- PyDict.new
+        args <- case PyExc.exceptionTraceback exception of
+          Just tb -> PyTuple.toTuple [PyExc.exceptionType exception, PyExc.exceptionValue exception, tb]
+          _ -> PyTuple.toTuple [PyExc.exceptionType exception, PyExc.exceptionValue exception]
+        _ <- Py.call print_exc args kwargs
+        return ()
+    pyExceptionHandlerWithoutPythonTraceback :: PyExc.Exception -> IO ()
+    pyExceptionHandlerWithoutPythonTraceback exception = do
+        print exception
+        putStrLn "Unexpected Python exception (Please report a bug)"
+
+    verboseExc ioAction = handleEverything (\exc -> print exc >> error "Unexpected error") ioAction
+
+    handleEverything :: (SomeException -> IO a) -> IO a -> IO a
+    handleEverything = handle

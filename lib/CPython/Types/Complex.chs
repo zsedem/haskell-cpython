@@ -16,11 +16,11 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Complex
-	( Complex
-	, complexType
-	, toComplex
-	, fromComplex
-	) where
+  ( Complex
+  , complexType
+  , toComplex
+  , fromComplex
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -31,23 +31,23 @@ import           CPython.Internal
 newtype Complex = Complex (ForeignPtr Complex)
 
 instance Object Complex where
-	toObject (Complex x) = SomeObject x
-	fromForeignPtr = Complex
+  toObject (Complex x) = SomeObject x
+  fromForeignPtr = Complex
 
 instance Concrete Complex where
-	concreteType _ = complexType
+  concreteType _ = complexType
 
 {# fun pure unsafe hscpython_PyComplex_Type as complexType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 toComplex :: C.Complex Double -> IO Complex
 toComplex x = raw >>= stealObject where
-	real = realToFrac $ C.realPart x
-	imag = realToFrac $ C.imagPart x
-	raw = {# call PyComplex_FromDoubles as ^ #} real imag
+  real = realToFrac $ C.realPart x
+  imag = realToFrac $ C.imagPart x
+  raw = {# call PyComplex_FromDoubles as ^ #} real imag
 
 fromComplex :: Complex -> IO (C.Complex Double)
 fromComplex py = withObject py $ \pyPtr -> do
-	real <- {# call PyComplex_RealAsDouble as ^ #} pyPtr
-	imag <- {# call PyComplex_ImagAsDouble as ^ #} pyPtr
-	return $ realToFrac real C.:+ realToFrac imag
+  real <- {# call PyComplex_RealAsDouble as ^ #} pyPtr
+  imag <- {# call PyComplex_ImagAsDouble as ^ #} pyPtr
+  return $ realToFrac real C.:+ realToFrac imag

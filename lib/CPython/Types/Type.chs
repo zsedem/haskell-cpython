@@ -16,24 +16,24 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Type
-	( Type
-	, typeType
-	, isSubtype
-	) where
+  ( Type
+  , typeType
+  , isSubtype
+  ) where
 
 #include <hscpython-shim.h>
 
 import           CPython.Internal
 
 instance Concrete Type where
-	concreteType _ = typeType
+  concreteType _ = typeType
 
 {# fun pure unsafe hscpython_PyType_Type as typeType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 -- | Returns 'True' if the first parameter is a subtype of the second
 -- parameter.
 {# fun PyType_IsSubtype as isSubtype
-	{ withObject* `Type'
-	, withObject* `Type'
-	} -> `Bool' #}
+  { withObject* `Type'
+  , withObject* `Type'
+  } -> `Bool' #}
