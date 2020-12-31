@@ -82,8 +82,9 @@ import           Control.Applicative ((<$>))
 import qualified Control.Exception as E
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
-import           Foreign hiding (unsafePerformIO)
+import           Foreign hiding (unsafePerformIO, newForeignPtr, newForeignPtr_)
 import           Foreign.C
+import           Foreign.Concurrent(newForeignPtr)
 import           System.IO.Unsafe (unsafePerformIO)
 
 cToBool :: CInt -> Bool
@@ -155,13 +156,17 @@ withObject obj io = case toObject obj of
 peekObject :: Object obj => Ptr a -> IO obj
 peekObject ptr = E.bracketOnError incPtr decref mkObj where
   incPtr = incref ptr >> return ptr
-  mkObj _ = fromForeignPtr <$> newForeignPtr staticDecref (castPtr ptr)
+  mkObj _ = fromForeignPtr <$> newForeignPtr (castPtr ptr) (decref ptr)
 
 peekStaticObject :: Object obj => Ptr a -> IO obj
 peekStaticObject ptr = fromForeignPtr <$> newForeignPtr_ (castPtr ptr)
+  where
+    newForeignPtr_ p = newForeignPtr p (return ())
+
+
 
 unsafeStealObject :: Object obj => Ptr a -> IO obj
-unsafeStealObject ptr = fromForeignPtr <$> newForeignPtr staticDecref (castPtr ptr)
+unsafeStealObject ptr = fromForeignPtr <$> newForeignPtr (castPtr ptr) (decref ptr)
 
 stealObject :: Object obj => Ptr a -> IO obj
 stealObject ptr = exceptionIf (ptr == nullPtr) >> unsafeStealObject ptr
