@@ -78,11 +78,10 @@ module CPython.Internal
 
 #include <hscpython-shim.h>
 
-import           Control.Applicative ((<$>))
 import qualified Control.Exception as E
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
-import           Foreign hiding (unsafePerformIO, newForeignPtr, newForeignPtr_)
+import           Foreign hiding (newForeignPtr, newForeignPtr_)
 import           Foreign.C
 import           Foreign.Concurrent(newForeignPtr)
 import           System.IO.Unsafe (unsafePerformIO)
@@ -178,9 +177,6 @@ stealObject ptr = exceptionIf (ptr == nullPtr) >> unsafeStealObject ptr
 {# fun hscpython_Py_DECREF as decref
   { castPtr `Ptr a'
   } -> `()' id #}
-
-foreign import ccall "hscpython-shim.h &hscpython_Py_DECREF"
-  staticDecref :: FunPtr (Ptr a -> IO ())
 
 {# fun PyObject_CallObject as callObjectRaw
   `(Object self, Object args)' =>
