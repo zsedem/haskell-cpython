@@ -19,8 +19,6 @@ Flag usepython38
   Description: Fix python version to 3.8
   Default:     False
 
-extra-source-files:
-  cbits/hscpython-shim.h
 
 source-repository head
   type: git
@@ -39,6 +37,10 @@ library
   build-tools:
     c2hs >= 0.15
 
+  includes:
+    cbits/hscpython-shim.h
+  install-includes:
+    cbits/hscpython-shim.h
   exposed-modules:
     CPython
     CPython.Types
