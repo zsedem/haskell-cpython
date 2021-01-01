@@ -15,6 +15,10 @@ description:
   currently possible to call Haskell code from CPython, but this feature
   is planned.
 
+Flag usepython38
+  Description: Fix python version to 3.8
+  Default:     False
+
 extra-source-files:
   cbits/hscpython-shim.h
 
@@ -76,7 +80,10 @@ library
   c-sources: cbits/hscpython-shim.c
   include-dirs: cbits
 
-  pkgconfig-depends: python3
+  if flag(usepython38)
+    pkgconfig-depends: python-3.8
+  else
+    pkgconfig-depends: python3
   default-language:    Haskell2010
 
 test-suite cpython-testsuite
@@ -89,5 +96,9 @@ test-suite cpython-testsuite
       base > 4.0 && < 5.0
     , text
     , cpython
-  pkgconfig-depends: python3
+  if flag(usepython38)
+    extra-libraries: python3.8
+    pkgconfig-depends: python-3.8
+  else
+    pkgconfig-depends: python3
   default-language:    Haskell2010
