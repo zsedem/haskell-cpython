@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -55,6 +56,18 @@ instance ToPy Text where
 
 instance FromPy Text where
   fromPy = easyFromPy Py.fromUnicode "Text"
+
+instance ToPy Char where
+  toPy = easyToPy Py.toUnicode . T.singleton
+
+instance FromPy Char where
+  fromPy c = T.head <$> easyFromPy Py.fromUnicode "Char" c
+
+instance ToPy String where
+  toPy = easyToPy Py.toUnicode . T.pack
+
+instance FromPy String where
+  fromPy s = T.unpack <$> easyFromPy Py.fromUnicode "String" s
 
 instance (FromPy a, FromPy b) => FromPy (a, b) where
   fromPy val = do
