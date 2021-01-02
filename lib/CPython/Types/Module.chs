@@ -17,18 +17,18 @@
 --
 
 module CPython.Types.Module
-	( Module
-	, moduleType
-	, new
-	, getDictionary
-	, getName
-	, getFilename
-	, addObject
-	, addIntegerConstant
-	, addTextConstant
-	, importModule
-	, reload
-	) where
+  ( Module
+  , moduleType
+  , new
+  , getDictionary
+  , getName
+  , getFilename
+  , addObject
+  , addIntegerConstant
+  , addTextConstant
+  , importModule
+  , reload
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -42,60 +42,60 @@ import           CPython.Types.Unicode (toUnicode)
 newtype Module = Module (ForeignPtr Module)
 
 instance Object Module where
-	toObject (Module x) = SomeObject x
-	fromForeignPtr = Module
+  toObject (Module x) = SomeObject x
+  fromForeignPtr = Module
 
 instance Concrete Module where
-	concreteType _ = moduleType
+  concreteType _ = moduleType
 
 {# fun pure unsafe hscpython_PyModule_Type as moduleType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 -- | Return a new module object with the @__name__@ attribute set. Only the
 -- module&#x2019;s @__doc__@ and @__name__@ attributes are filled in; the
 -- caller is responsible for providing a @__file__@ attribute.
 {# fun PyModule_New as new
-	{ withText* `Text'
-	} -> `Module' stealObject* #}
+  { withText* `Text'
+  } -> `Module' stealObject* #}
 
 -- | Return the dictionary object that implements a module&#x2019;s namespace;
 -- this object is the same as the @__dict__@ attribute of the module. This
 -- computation never fails. It is recommended extensions use other
 -- computations rather than directly manipulate a module&#x2019;s @__dict__@.
 {# fun PyModule_GetDict as getDictionary
-	{ withObject* `Module'
-	} -> `Dictionary' peekObject* #}
+  { withObject* `Module'
+  } -> `Dictionary' peekObject* #}
 
 -- | Returns a module&#x2019;s @__name__@ value. If the module does not
 -- provide one, or if it is not a string, throws @SystemError@.
 getName :: Module -> IO Text
 getName py =
-	withObject py $ \py' -> do
-	raw <- {# call PyModule_GetName as ^ #} py'
-	exceptionIf $ raw == nullPtr
-	peekText raw
+  withObject py $ \py' -> do
+  raw <- {# call PyModule_GetName as ^ #} py'
+  exceptionIf $ raw == nullPtr
+  peekText raw
 
 -- | Returns the name of the file from which a module was loaded using the
 -- module&#x2019;s @__file__@ attribute. If this is not defined, or if it is
 -- not a string, throws @SystemError@.
 getFilename :: Module -> IO Text
 getFilename py =
-	withObject py $ \py' -> do
-	raw <- {# call PyModule_GetFilename as ^ #} py'
-	exceptionIf $ raw == nullPtr
-	peekText raw
+  withObject py $ \py' -> do
+  raw <- {# call PyModule_GetFilename as ^ #} py'
+  exceptionIf $ raw == nullPtr
+  peekText raw
 
 -- | Add an object to a module with the given name. This is a convenience
 -- computation which can be used from the module&#x2019;s initialization
 -- computation.
 addObject :: Object value => Module -> Text -> value -> IO ()
 addObject py name val =
-	withObject py $ \py' ->
-	withText name $ \name' ->
-	withObject val $ \val' ->
-	incref val' >>
-	{# call PyModule_AddObject as ^ #} py' name' val'
-	>>= checkStatusCode
+  withObject py $ \py' ->
+  withText name $ \name' ->
+  withObject val $ \val' ->
+  incref val' >>
+  {# call PyModule_AddObject as ^ #} py' name' val'
+  >>= checkStatusCode
 
 -- | Add an integer constant to a module. This convenience computation can be
 -- used from the module&#x2019;s initialization computation.
@@ -116,13 +116,13 @@ addTextConstant m name value = toUnicode value >>= addObject m name
 -- This computation always uses absolute imports.
 importModule :: Text -> IO Module
 importModule name = do
-	pyName <- toUnicode name
-	withObject pyName $ \namePtr ->
-		{# call PyImport_Import as ^ #} namePtr
-		>>= stealObject
+  pyName <- toUnicode name
+  withObject pyName $ \namePtr ->
+    {# call PyImport_Import as ^ #} namePtr
+    >>= stealObject
 
 -- | Reload a module. If an error occurs, an exception is thrown and the old
 -- module still exists.
 {# fun PyImport_ReloadModule as reload
-	{ withObject* `Module'
-	} -> `Module' stealObject* #}
+  { withObject* `Module'
+  } -> `Module' stealObject* #}

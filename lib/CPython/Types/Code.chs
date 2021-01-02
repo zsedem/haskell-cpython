@@ -16,9 +16,9 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Code
-	( Code
-	, codeType
-	) where
+  ( Code
+  , codeType
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -27,11 +27,11 @@ import           CPython.Internal
 newtype Code = Code (ForeignPtr Code)
 
 instance Object Code where
-	toObject (Code x) = SomeObject x
-	fromForeignPtr = Code
+  toObject (Code x) = SomeObject x
+  fromForeignPtr = Code
 
 instance Concrete Code where
-	concreteType _ = codeType
+  concreteType _ = codeType
 
 {# fun pure unsafe hscpython_PyCode_Type as codeType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}

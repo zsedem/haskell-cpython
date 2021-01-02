@@ -16,11 +16,11 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Float
-	( Float
-	, floatType
-	, toFloat
-	, fromFloat
-	) where
+  ( Float
+  , floatType
+  , toFloat
+  , fromFloat
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -31,19 +31,19 @@ import           CPython.Internal
 newtype Float = Float (ForeignPtr Float)
 
 instance Object Float where
-	toObject (Float x) = SomeObject x
-	fromForeignPtr = Float
+  toObject (Float x) = SomeObject x
+  fromForeignPtr = Float
 
 instance Concrete Float where
-	concreteType _ = floatType
+  concreteType _ = floatType
 
 {# fun pure unsafe hscpython_PyFloat_Type as floatType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 {# fun PyFloat_FromDouble as toFloat
-	{ realToFrac `Double'
-	} -> `Float' stealObject* #}
+  { realToFrac `Double'
+  } -> `Float' stealObject* #}
 
 {# fun PyFloat_AsDouble as fromFloat
-	{ withObject* `Float'
-	} -> `Double' realToFrac #}
+  { withObject* `Float'
+  } -> `Double' realToFrac #}

@@ -16,11 +16,11 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Protocols.Iterator
-	( Iterator (..)
-	, SomeIterator
-	, castToIterator
-	, next
-	) where
+  ( Iterator (..)
+  , SomeIterator
+  , castToIterator
+  , next
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -30,21 +30,21 @@ import           CPython.Internal
 -- not implement the iterator protocol, returns 'Nothing'.
 castToIterator :: Object a => a -> IO (Maybe SomeIterator)
 castToIterator obj =
-	withObject obj $ \objPtr -> do
-	isIter <- fmap cToBool $ {# call hscpython_PyIter_Check as ^ #} objPtr
-	return $ if isIter
-		then Just $ unsafeCastToIterator obj
-		else Nothing
+  withObject obj $ \objPtr -> do
+  isIter <- fmap cToBool $ {# call hscpython_PyIter_Check as ^ #} objPtr
+  return $ if isIter
+    then Just $ unsafeCastToIterator obj
+    else Nothing
 
 -- | Return the next value from the iteration, or 'Nothing' if there are no
 -- remaining items.
 next :: Iterator iter => iter -> IO (Maybe SomeObject)
 next iter =
-	withObject iter $ \iterPtr -> do
-	raw <- {# call PyIter_Next as ^ #} iterPtr
-	if raw == nullPtr
-		then do
-			err <- {# call PyErr_Occurred as ^ #}
-			exceptionIf $ err /= nullPtr
-			return Nothing
-		else fmap Just $ stealObject raw
+  withObject iter $ \iterPtr -> do
+  raw <- {# call PyIter_Next as ^ #} iterPtr
+  if raw == nullPtr
+    then do
+      err <- {# call PyErr_Occurred as ^ #}
+      exceptionIf $ err /= nullPtr
+      return Nothing
+    else fmap Just $ stealObject raw

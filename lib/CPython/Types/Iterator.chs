@@ -16,14 +16,14 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module CPython.Types.Iterator
-	( SequenceIterator
-	, sequenceIteratorType
-	, sequenceIteratorNew
-	
-	, CallableIterator
-	, callableIteratorType
-	, callableIteratorNew
-	) where
+  ( SequenceIterator
+  , sequenceIteratorType
+  , sequenceIteratorNew
+  
+  , CallableIterator
+  , callableIteratorType
+  , callableIteratorNew
+  ) where
 
 #include <hscpython-shim.h>
 
@@ -32,47 +32,47 @@ import           CPython.Internal
 newtype SequenceIterator = SequenceIterator (ForeignPtr SequenceIterator)
 
 instance Iterator SequenceIterator where
-	toIterator = unsafeCastToIterator
+  toIterator = unsafeCastToIterator
 
 instance Object SequenceIterator where
-	toObject (SequenceIterator x) = SomeObject x
-	fromForeignPtr = SequenceIterator
+  toObject (SequenceIterator x) = SomeObject x
+  fromForeignPtr = SequenceIterator
 
 instance Concrete SequenceIterator where
-	concreteType _ = sequenceIteratorType
+  concreteType _ = sequenceIteratorType
 
 newtype CallableIterator = CallableIterator (ForeignPtr CallableIterator)
 
 instance Iterator CallableIterator where
-	toIterator = unsafeCastToIterator
+  toIterator = unsafeCastToIterator
 
 instance Object CallableIterator where
-	toObject (CallableIterator x) = SomeObject x
-	fromForeignPtr = CallableIterator
+  toObject (CallableIterator x) = SomeObject x
+  fromForeignPtr = CallableIterator
 
 instance Concrete CallableIterator where
-	concreteType _ = callableIteratorType
+  concreteType _ = callableIteratorType
 
 {# fun pure unsafe hscpython_PySeqIter_Type as sequenceIteratorType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 {# fun pure unsafe hscpython_PyCallIter_Type as callableIteratorType
-	{} -> `Type' peekStaticObject* #}
+  {} -> `Type' peekStaticObject* #}
 
 -- | Return an 'Iterator' that works with a general sequence object, /seq/.
 -- The iteration ends when the sequence raises @IndexError@ for the
 -- subscripting operation.
 {# fun PySeqIter_New as sequenceIteratorNew
-	`Sequence seq' =>
-	{ withObject* `seq'
-	} -> `SequenceIterator' stealObject* #}
+  `Sequence seq' =>
+  { withObject* `seq'
+  } -> `SequenceIterator' stealObject* #}
 
 -- | Return a new 'Iterator'. The first parameter, /callable/, can be any
 -- Python callable object that can be called with no parameters; each call
 -- to it should return the next item in the iteration. When /callable/
 -- returns a value equal to /sentinel/, the iteration will be terminated.
 {# fun PyCallIter_New as callableIteratorNew
-	`(Object callable, Object sentinel)' =>
-	{ withObject* `callable'
-	, withObject* `sentinel'
-	} -> `CallableIterator' stealObject* #}
+  `(Object callable, Object sentinel)' =>
+  { withObject* `callable'
+  , withObject* `sentinel'
+  } -> `CallableIterator' stealObject* #}

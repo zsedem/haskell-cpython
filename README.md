@@ -1,4 +1,4 @@
-# Haskell CPython C bindings [![Build Status](https://travis-ci.org/zsedem/haskell-cpython.svg?branch=3.5)](https://travis-ci.org/zsedem/haskell-cpython)
+# Haskell CPython C bindings [![Build Status](https://travis-ci.org/zsedem/haskell-cpython.svg?branch=main)](https://travis-ci.org/zsedem/haskell-cpython)
 
 ## Writing a Haskell wrapper over a Python module
 
