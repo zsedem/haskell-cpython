@@ -4,6 +4,7 @@
 
 module CPython.Simple.Instances where
 
+import Control.Exception (Exception(..), throwIO)
 import Control.Monad ((<=<))
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -21,6 +22,13 @@ class ToPy a where
 class FromPy a where
   fromPy :: Py.SomeObject -> IO a
 
+data PyCastException = PyCastException String
+  deriving (Show)
+
+instance Exception PyCastException where
+  displayException (PyCastException typename) =
+    "FromPy could not cast to " ++ typename
+
 easyToPy
   :: Py.Object c
   => (a -> IO c) -- ^ python to- conversion, e.g. Py.toFloat
@@ -34,10 +42,11 @@ easyFromPy
   -> Text          -- ^ error message text for the haskell type being converted to, e.g. "Double"
   -> Py.SomeObject -- ^ python object to cast from
   -> IO c
-easyFromPy conversion typename = conversion . castErr typename <=< Py.cast
-  where castErr typename' = \case
-          Nothing -> error $ "FromPy could not cast to " ++ T.unpack typename'
-          Just x -> x
+easyFromPy conversion typename obj = do
+  casted <- Py.cast obj
+  case casted of
+    Nothing -> throwIO $ PyCastException (T.unpack typename)
+    Just x -> conversion x
 
 instance ToPy Integer where
   toPy = easyToPy Py.toInteger
