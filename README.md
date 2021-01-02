@@ -34,8 +34,8 @@ sumWithPy intlist = do
                           return $ fromMaybe (error "not a number returned from the sum") x
     toObj integer = fmap Py.toObject $ PyInt.toInteger integer
 ```
-This example should show you how different is to call python from strongly typed code, because you have to
-handle every bit of the errors, like geting an attribute of a module or just creating new python objects.
+This example should show you how different it is to call python from strongly typed code, because you have to
+handle every bit of the errors, like getting an attribute of a module or just creating new python objects.
 
 ```python
 intlist = [1, 10, 100, 42]
