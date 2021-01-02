@@ -7,41 +7,6 @@ means if you compiled with a certain minor version (3.7.1) you should run your p
 with the same minor version (3.7.x). (Using docker or nix to package your program is enough
 to avoid this problem)
 
-## Using the Low Level API
-
-We provide a very thin layer between the C API and you to be able to avoid 
-writing FFI codes directly (like calling incref/decref for GC). The C API 
-documentation can be useful too. [link](https://docs.python.org/3/c-api/index.html)
-
-After you are familiar with the concepts from the C API, you can search for
-methods in the [API docs](http://hackage.haskell.org/package/cpython-3.5.0) on hackage
-
-These examples below should help you start with using the API, by showing the 
-equivalent haskell code to implement the same as the python example.
-
-### Using `builtins.sum` function
-```haskell
-sumWithPy :: [Integer] -> IO Int
-sumWithPy intlist = do
-    testList <- traverse toObj intlist >>= PyList.toList >>= (return . Py.toObject)
-    builtinsModule <- Py.importModule "builtins"
-    sumFunc <- PyUnicode.toUnicode "sum" >>= Py.getAttribute builtinsModule
-    args <- PyTuple.toTuple [testList]
-    kwargs <- PyDict.new
-    Py.call sumFunc args kwargs >>= castToNumber >>= Py.toInteger >>= PyInt.fromInteger
-  where
-    castToNumber obj = do x <- Py.castToNumber obj
-                          return $ fromMaybe (error "not a number returned from the sum") x
-    toObj integer = fmap Py.toObject $ PyInt.toInteger integer
-```
-This example should show you how different it is to call python from strongly typed code, because you have to
-handle every bit of the errors, like getting an attribute of a module or just creating new python objects.
-
-```python
-intlist = [1, 10, 100, 42]
-sum(intlist)
-```
-
 ## Writing a Haskell wrapper over a Python module
 
 The easiest way to get started is to `import CPython.Simple`
@@ -143,4 +108,40 @@ Here's how we can set `random.BPF` to some given number `n`
 ```haskell
 setBpf :: Integer -> IO ()
 setBpf n = setAttribute "random" "BPF" n
+```
+
+## Using the Low Level API
+
+Sometimes it might be useful to use the less simpler API, especially if you are
+already familiar with the [CPython C API](https://docs.python.org/3/c-api/index.html).
+This API comes with one-on-one connects between the C API methods and the Haskell methods,
+but you won't have to write FFI codes directly (like calling incref/decref for Python GC).
+
+After you are familiar with the concepts from the C API, you can search for
+methods in the [API docs](http://hackage.haskell.org/package/cpython-3.5.0) on hackage
+
+These examples below should help you start with using the API, by showing the 
+equivalent haskell code to implement the same as the python example.
+
+### Using `builtins.sum` function
+```haskell
+sumWithPy :: [Integer] -> IO Int
+sumWithPy intlist = do
+    testList <- traverse toObj intlist >>= PyList.toList >>= (return . Py.toObject)
+    builtinsModule <- Py.importModule "builtins"
+    sumFunc <- PyUnicode.toUnicode "sum" >>= Py.getAttribute builtinsModule
+    args <- PyTuple.toTuple [testList]
+    kwargs <- PyDict.new
+    Py.call sumFunc args kwargs >>= castToNumber >>= Py.toInteger >>= PyInt.fromInteger
+  where
+    castToNumber obj = do x <- Py.castToNumber obj
+                          return $ fromMaybe (error "not a number returned from the sum") x
+    toObj integer = fmap Py.toObject $ PyInt.toInteger integer
+```
+This example should show you how different it is to call python from strongly typed code, because you have to
+handle every bit of the errors, like getting an attribute of a module or just creating new python objects.
+
+```python
+intlist = [1, 10, 100, 42]
+sum(intlist)
 ```
