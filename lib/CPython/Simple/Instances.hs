@@ -8,6 +8,7 @@ import Control.Exception (Exception(..), throwIO)
 import Control.Monad ((<=<))
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Typeable
 
 import qualified CPython.Constants as Py
 import qualified CPython.Protocols.Object as Py
@@ -37,57 +38,57 @@ easyToPy
 easyToPy f = fmap Py.toObject . f
 
 easyFromPy
-  :: Py.Concrete b
+  :: (Py.Concrete b, Typeable c)
   => (b -> IO c)   -- ^ python from- conversion, e.g. Py.fromFloat
-  -> Text          -- ^ error message text for the haskell type being converted to, e.g. "Double"
+  -> Proxy c       -- ^ proxy for the type being converted to
   -> Py.SomeObject -- ^ python object to cast from
   -> IO c
 easyFromPy conversion typename obj = do
   casted <- Py.cast obj
   case casted of
-    Nothing -> throwIO $ PyCastException (T.unpack typename)
+    Nothing -> throwIO $ PyCastException (show $ typeRep typename)
     Just x -> conversion x
 
 instance ToPy Integer where
   toPy = easyToPy Py.toInteger
 
 instance FromPy Integer where
-  fromPy = easyFromPy Py.fromInteger "Integer"
+  fromPy = easyFromPy Py.fromInteger Proxy
 
 instance ToPy Double where
   toPy = easyToPy Py.toFloat
 
 instance FromPy Double where
-  fromPy = easyFromPy Py.fromFloat "Double"
+  fromPy = easyFromPy Py.fromFloat Proxy
 
 instance ToPy Text where
   toPy = easyToPy Py.toUnicode
 
 instance FromPy Text where
-  fromPy = easyFromPy Py.fromUnicode "Text"
+  fromPy = easyFromPy Py.fromUnicode Proxy
 
 instance ToPy Char where
   toPy = easyToPy Py.toUnicode . T.singleton
 
 instance FromPy Char where
-  fromPy c = T.head <$> easyFromPy Py.fromUnicode "Char" c
+  fromPy c = T.head <$> easyFromPy Py.fromUnicode Proxy c
 
 instance ToPy String where
   toPy = easyToPy Py.toUnicode . T.pack
 
 instance FromPy String where
-  fromPy s = T.unpack <$> easyFromPy Py.fromUnicode "String" s
+  fromPy s = T.unpack <$> easyFromPy Py.fromUnicode Proxy s
 
 instance (FromPy a, FromPy b) => FromPy (a, b) where
   fromPy val = do
-    [pyA, pyB] <- easyFromPy Py.fromTuple "(a, b)" val
+    [pyA, pyB] <- easyFromPy Py.fromTuple Proxy val
     a <- fromPy pyA
     b <- fromPy pyB
     pure (a, b)
 
 instance (FromPy a, FromPy b, FromPy c) => FromPy (a, b, c) where
   fromPy val = do
-    [pyA, pyB, pyC] <- easyFromPy Py.fromTuple "(a, b, c)" val
+    [pyA, pyB, pyC] <- easyFromPy Py.fromTuple Proxy val
     a <- fromPy pyA
     b <- fromPy pyB
     c <- fromPy pyC
@@ -106,7 +107,7 @@ instance ToPy a => ToPy (Maybe a) where
 
 instance FromPy a => FromPy [a] where
   fromPy val = do
-    list <- easyFromPy Py.fromList "[a]" val
+    list <- easyFromPy Py.fromList Proxy val
     mapM fromPy list
 
 instance ToPy a => ToPy [a] where
