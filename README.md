@@ -1,6 +1,6 @@
 # Haskell CPython C bindings [![Build Status](https://travis-ci.org/zsedem/haskell-cpython.svg?branch=main)](https://travis-ci.org/zsedem/haskell-cpython)
 
-This library provides the C bindings to more or less all of the python3 C API.
+This library provides C bindings to more or less all of the python3 C API.
 
 > WARNING: Note that the python 3 C API might be quite stable, BUT the [ABI](https://docs.python.org/3/c-api/stable.html) is not, which
 means if you compiled with a certain minor version (3.7.1) you should run your program
@@ -11,11 +11,11 @@ to avoid this problem)
 
 The easiest way to get started is to `import CPython.Simple`
 
-The API surface there is fairly small, although if you're doing something fancy you may need to dip into other parts of `CPython`
+The `Simple` API surface is fairly small, so if you're doing something fancy you may need to dip into other parts of `CPython`
 
 ### General Info
 
-`initialize :: IO ()` kicks off talking to Python, and will need to be called by your users before they use your library.
+`initialize :: IO ()` kicks off talking to Python, and will need to be called before using other functions.
 
 The `ToPy` and `FromPy` instances are what let us convert Haskell values to and from the corresponding Python values. There are `easyToPy` and `easyFromPy` helpers to help you easily write your own instances in common cases. If you find an instance for some common Haskell type is missing, please submit a PR!
 
@@ -31,7 +31,7 @@ sampleArgs =
 
 ### Calling Functions
 
-The most common use case is to call some Python function, which you can do with `call`
+The most common use case is to call some Python function, which we can do with `call`
 
 ```haskell
 call
@@ -43,29 +43,29 @@ call
   -> IO a
 ```
 
-For example, if I wanted to wrap Python's `random.randint(low, high)`, I could write this:
+For example, if we wanted to wrap Python's `random.randint(low, high)`, we could write this:
 
 ```haskell
 randint :: Integer -> Integer -> IO Integer
-randint low high = do
+randint low high =
   call "random" "randint" [arg low, arg high] []
 ```
 
-Because of the `FromPy` instance in `call`'s type signature, we can infer what to do to convert a Python value back into Haskell, if given the type.
+Because of the `FromPy` instance in `call`'s type signature, we can infer what to do to convert a Python value back into Haskell, if given the type
 
 ```haskell
 uniform :: Integer -> Integer -> IO Double
-uniform low high = do
+uniform low high =
   call "random" "uniform" [arg low, arg high] []
 ```
 
-You can also use the `TypeApplications` language extension to do this, if needed.
+We can also use the `TypeApplications` language extension to do this, if needed
 
 ```haskell
 call @Double "random" "uniform" [arg low, arg high] []
 ```
 
-Calling a function with mixed positional and keyword arguments is also fairly straightforward.
+Calling a function with mixed positional and keyword arguments is also fairly straightforward:
 
 ```haskell
 moveToDuration :: Integer -> Integer -> Double -> IO ()
@@ -114,8 +114,8 @@ setBpf n = setAttribute "random" "BPF" n
 
 Sometimes it might be useful to use the less simpler API, especially if you are
 already familiar with the [CPython C API](https://docs.python.org/3/c-api/index.html).
-This API comes with one-on-one connects between the C API methods and the Haskell methods,
-but you won't have to write FFI codes directly (like calling incref/decref for Python GC).
+This API comes with one-on-one connections between the C API methods and the Haskell methods,
+but you won't have to write FFI code directly (like calling incref/decref for Python GC).
 
 After you are familiar with the concepts from the C API, you can search for
 methods in the [API docs](http://hackage.haskell.org/package/cpython-3.5.0) on hackage
