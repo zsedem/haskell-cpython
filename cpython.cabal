@@ -95,10 +95,27 @@ library
     pkgconfig-depends: python3
   default-language:    Haskell2010
 
-test-suite cpython-testsuite
+test-suite cpython-sync-testsuite
   type:        exitcode-stdio-1.0
   main-is:     Tests.hs
-  ghc-options: -Wall -fno-warn-orphans
+  ghc-options: -Wall
+  hs-source-dirs: tests
+
+  build-depends:
+      base > 4.0 && < 5.0
+    , text
+    , cpython
+  if flag(usepython38)
+    extra-libraries: python3.8
+    pkgconfig-depends: python-3.8
+  else
+    pkgconfig-depends: python3
+  default-language:    Haskell2010
+
+test-suite cpython-async-testsuite
+  type:        exitcode-stdio-1.0
+  main-is:     ThreadingTests.hs
+  ghc-options: -Wall -threaded +RTS -N10 -RTS
   hs-source-dirs: tests
 
   build-depends:
