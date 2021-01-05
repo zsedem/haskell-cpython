@@ -145,3 +145,44 @@ handle every bit of the errors, like getting an attribute of a module or just cr
 intlist = [1, 10, 100, 42]
 sum(intlist)
 ```
+### Printing traceback from python
+This example is an approach to handle python exceptions, like python would do it, so if an exception comes, we print a traceback
+```haskell
+{-# LANGUAGE OverloadedStrings #-}
+module Main
+  ( main ) where
+
+import qualified CPython as Py
+import qualified CPython.Types.Module as Py
+import qualified CPython.Types.Dictionary as PyDict
+import qualified CPython.Types.List as PyList
+import qualified CPython.Types.Tuple as PyTuple
+import qualified CPython.Types.Unicode as PyUnicode
+import qualified CPython.Types.Exception as PyExc
+import Data.Text()
+import Control.Exception(handle)
+
+main :: IO ()
+main = handle pyExceptionHandler $ do
+  Py.initialize
+  callingSomePython
+  Py.finalize
+  where
+    pyExceptionHandler :: PyExc.Exception -> IO ()
+    pyExceptionHandler exception = handle pyExceptionHandlerWithoutPythonTraceback $ do
+        tracebackModule <- Py.importModule "traceback"
+        print_exc <- PyUnicode.toUnicode "print_exception" >>= Py.getAttribute tracebackModule
+        kwargs <- PyDict.new
+        args <- case PyExc.exceptionTraceback exception of
+          Just tb -> PyTuple.toTuple [PyExc.exceptionType exception, PyExc.exceptionValue exception, tb]
+          _ -> PyTuple.toTuple [PyExc.exceptionType exception, PyExc.exceptionValue exception]
+        _ <- Py.call print_exc args kwargs
+        return ()
+    pyExceptionHandlerWithoutPythonTraceback :: PyExc.Exception -> IO ()
+    pyExceptionHandlerWithoutPythonTraceback exception = do
+        print exception
+        putStrLn "Unexpected Python exception (Please report a bug)"
+
+callingSomePython :: IO ()
+callingSomePython = do ...
+```
