@@ -27,17 +27,10 @@ arg :: ToPy a => a -> Arg
 arg = Arg
 
 initialize :: IO ()
-initialize = Py.initialize `catch`
-  \(_ :: SomeException) -> error $
-    "Couldn't initialize.\nMaybe <Python.h> is missing?"
+initialize = Py.initialize
 
 importModule :: Text -> IO Py.Module
-importModule module_ = Py.importModule module_ `catch`
-  \(_ :: SomeException) -> do
-    error $
-      "Error: Couldn't import Python module named `" <> T.unpack module_ <> "`\n" <>
-      "Maybe it's a typo, or `" <> T.unpack module_ <> "` isn't installed?\n" <>
-      "Check with `python -m " <> T.unpack module_ <> "`"
+importModule module_ = Py.importModule module_
 
 call
   :: FromPy a
@@ -46,20 +39,14 @@ call
   -> [Arg] -- ^ args
   -> [(Text, Arg)] -- ^ kwargs
   -> IO a
-call moduleName func args kwargs = (do
+call moduleName func args kwargs = do
   module_ <- importModule moduleName
   pyFunc <- Py.getAttribute module_ =<< Py.toUnicode func
   pyArgs <- mapM toPy args
   pyArgsTuple <- Py.toTuple pyArgs
   pyKwargs <- toPyKwargs kwargs
   result <- Py.call pyFunc pyArgsTuple pyKwargs
-  fromPy result) `catch`
-    \(_ :: SomeException) -> do
-      error $
-        "Error when trying to call Python function named `" <> T.unpack func <> "`\n" <>
-        "From the `" <> T.unpack moduleName <> "` module\n" <>
-        "Maybe something is misspelled, or the arguments aren't correct?\n" <>
-        "It's also possible the function just threw a Python exception"
+  fromPy result
   where
     toPyKwargs :: [(Text, Arg)] -> IO Py.Dictionary
     toPyKwargs dict = do
