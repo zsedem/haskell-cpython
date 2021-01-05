@@ -1,14 +1,16 @@
 name: cpython
-version: 3.5.0
+version: 3.5.1
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
 maintainer: Adam Zsigmond <zsedem@gmail.com>
 build-type: Simple
-cabal-version: >= 1.10
+cabal-version: 1.18
 category: Foreign
 homepage: https://github.com/zsedem/haskell-cpython
-extra-source-files:  changelog.md
+extra-doc-files:
+  changelog.md
+  README.md
 synopsis: Bindings for libpython
 description:
   These bindings allow Haskell code to call CPython code. It is not
