@@ -35,6 +35,7 @@ module CPython.Types.Module
 
 import           Prelude hiding (toInteger)
 import           Control.Exception (catch, throwIO, SomeException)
+import           Data.Semigroup ((<>))
 import           Data.Text (Text, unpack)
 
 import           CPython.Internal hiding (new)

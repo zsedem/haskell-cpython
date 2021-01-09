@@ -61,8 +61,10 @@ module CPython.Protocols.Object
 
 import           Prelude hiding (Ordering (..), print)
 import           Control.Exception (catch, throwIO, SomeException)
+import           Data.Semigroup ((<>))
 import qualified Data.Text as T
 import           System.IO (Handle, hPutStrLn)
+
 
 import           CPython.Internal hiding (toBool)
 import           CPython.Protocols.Object.Enums
