@@ -59,7 +59,7 @@ instance FromPy Bool where
       (False, True) -> pure False
       (False, False) -> throwIO . PyCastException . show $ typeRep (Proxy :: Proxy Bool)
       (True, True) -> throwIO . PyCastException $ (show $ typeRep (Proxy :: Proxy Bool)) ++
-        "Python object was True and False at the same time. Should be impossible."
+        ". Python object was True and False at the same time. Should be impossible."
 
 instance ToPy Integer where
   toPy = easyToPy Py.toInteger
