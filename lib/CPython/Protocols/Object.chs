@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- Copyright (C) 2009 John Millikin <jmillikin@gmail.com>
 --
@@ -59,6 +60,7 @@ module CPython.Protocols.Object
 #include <hscpython-shim.h>
 
 import           Prelude hiding (Ordering (..), print)
+import           Control.Exception (catch, throwIO, SomeException)
 import qualified Data.Text as T
 import           System.IO (Handle, hPutStrLn)
 
@@ -210,11 +212,18 @@ print obj h = repr obj >>= U.fromUnicode >>= (hPutStrLn h . T.unpack)
 -- equivalent of the Python expression @self(*args, **kw)@.
 call :: Object self => self -> Tuple -> Dictionary -> IO SomeObject
 call self args kwargs =
-  withObject self $ \selfPtr ->
+  (withObject self $ \selfPtr ->
   withObject args $ \argsPtr ->
   withObject kwargs $ \kwargsPtr ->
   {# call PyObject_Call as ^ #} selfPtr argsPtr kwargsPtr
   >>= stealObject
+  ) `catch`
+    \(e :: SomeException) -> do
+      putStrLn $
+        "Error when trying to call Python function\n" <>
+        "Maybe something is misspelled, or the arguments aren't correct?\n" <>
+        "It's also possible the function just threw a Python exception"
+      throwIO e
 
 -- | Call a callable Python object /self/, with arguments given by the list.
 callArgs :: Object self => self -> [SomeObject] -> IO SomeObject
