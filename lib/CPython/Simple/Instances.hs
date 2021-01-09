@@ -17,12 +17,29 @@ import qualified CPython.Types.Tuple as Py (fromTuple)
 
 -- TODO: ToPy/FromPy for Bool will require some library changes (e.g. adding fromBool)
 
+-- | `ToPy` instances indicate that a type can be marshalled from Haskell to Python automatically
+--
+-- For example, @ToPy Integer@ indicates that we know how to take a Haskell `Integer` and convert
+-- it into a Python `int` object
 class ToPy a where
+  -- | Takes some Haskell type, and converts it to a Python object by going over FFI
+  --
+  -- Generally you'll only need to call `toPy` manually on some type when writing your own `ToPy` instances for another type
   toPy :: a -> IO Py.SomeObject
 
+-- | `FromPy` instances indicate that a type can be marshalled from Python to Haskell automatically
+--
+-- For example, @FromPy Integer@ indicates that we know how to take some Python object and convert
+-- it into a Haskell Integer. If the Python object is `int`, then we can cast properly. Failed casts throw a `PyCastException`
 class FromPy a where
+  -- | Takes some Python object, and converts it to the corresponding Haskell type by going over FFI. Might throw a `PyCastException`
+  --
+  -- Generally you'll only need to call `fromPy` manually on some type when writing your own `FromPy` instances for another type
   fromPy :: Py.SomeObject -> IO a
 
+-- | An exception representing a failed cast from a Python object to Haskell value, usually because the expected type of the Python object was not correct.
+--
+-- Carries a `String` which represents the name of the expected Haskell type which caused a failed cast. If using `easyFromPy`, this `String` is found with `typeRep`
 data PyCastException = PyCastException String
   deriving (Show)
 
@@ -30,24 +47,33 @@ instance Exception PyCastException where
   displayException (PyCastException typename) =
     "FromPy could not cast to " ++ typename
 
+-- | Helper that lets you convert a Haskell value to a Python object by providing both a Python conversion function (from the Haskell type, over FFI, to some Python Object) as well as the Haskell value
+--
+-- Lets you define `toPy` with just a Python conversion function
 easyToPy
-  :: Py.Object c
-  => (a -> IO c) -- ^ python to- conversion, e.g. Py.toFloat
-  -> a           -- ^ haskell type being converted
-  -> IO Py.SomeObject
-easyToPy f = fmap Py.toObject . f
+  :: Py.Object p
+  => (h -> IO p)      -- ^ python to- conversion, e.g. Py.toFloat
+  -> h                -- ^ haskell type being converted
+  -> IO Py.SomeObject -- ^ Python object
+easyToPy convert = fmap Py.toObject . convert
 
+-- | Helper that takes a conversion function and a Python object, and casts the Python object
+-- into a Haskell value.
+--
+-- Lets you define `fromPy` with just a Python conversion function
+--
+-- We use `Proxy` to infer the type name for use in case of a failed cast. In the context of defining an instance, this type will be inferrable, so you can just provide a `Proxy` value
 easyFromPy
-  :: (Py.Concrete b, Typeable c)
-  => (b -> IO c)   -- ^ python from- conversion, e.g. Py.fromFloat
-  -> Proxy c       -- ^ proxy for the type being converted to
+  :: (Py.Concrete p, Typeable h)
+  => (p -> IO h)   -- ^ python from- conversion, e.g. Py.fromFloat
+  -> Proxy h       -- ^ proxy for the type being converted to
   -> Py.SomeObject -- ^ python object to cast from
-  -> IO c
-easyFromPy conversion typename obj = do
+  -> IO h          -- ^ Haskell value
+easyFromPy convert typename obj = do
   casted <- Py.cast obj
   case casted of
     Nothing -> throwIO $ PyCastException (show $ typeRep typename)
-    Just x -> conversion x
+    Just x -> convert x
 
 instance ToPy Integer where
   toPy = easyToPy Py.toInteger
