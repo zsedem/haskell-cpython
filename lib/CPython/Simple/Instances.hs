@@ -15,6 +15,10 @@ import qualified CPython.Protocols.Object as Py
 import qualified CPython.Types as Py
 import qualified CPython.Types.Tuple as Py (fromTuple)
 
+-- | `ToPy` instances indicate that a type can be marshalled from Haskell to Python automatically
+--
+-- For example, @ToPy Integer@ indicates that we know how to take a Haskell `Integer` and convert
+-- it into a Python `int` object
 class ToPy a where
   -- | Takes some Haskell type, and converts it to a Python object by going over FFI
   --
