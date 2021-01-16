@@ -15,12 +15,6 @@ import qualified CPython.Protocols.Object as Py
 import qualified CPython.Types as Py
 import qualified CPython.Types.Tuple as Py (fromTuple)
 
--- TODO: ToPy/FromPy for Bool will require some library changes (e.g. adding fromBool)
-
--- | `ToPy` instances indicate that a type can be marshalled from Haskell to Python automatically
---
--- For example, @ToPy Integer@ indicates that we know how to take a Haskell `Integer` and convert
--- it into a Python `int` object
 class ToPy a where
   -- | Takes some Haskell type, and converts it to a Python object by going over FFI
   --
@@ -75,6 +69,20 @@ easyFromPy convert typename obj = do
     Nothing -> throwIO $ PyCastException (show $ typeRep typename)
     Just x -> convert x
 
+instance ToPy Bool where
+  toPy b = if b then Py.true else Py.false
+
+instance FromPy Bool where
+  fromPy pyB = do
+    isTrue <- Py.isTrue pyB
+    isFalse <- Py.isFalse pyB
+    case (isTrue, isFalse) of
+      (True, False) -> pure True
+      (False, True) -> pure False
+      (False, False) -> throwIO . PyCastException . show $ typeRep (Proxy :: Proxy Bool)
+      (True, True) -> throwIO . PyCastException $ (show $ typeRep (Proxy :: Proxy Bool)) ++
+        ". Python object was True and False at the same time. Should be impossible."
+
 instance ToPy Integer where
   toPy = easyToPy Py.toInteger
 
@@ -112,6 +120,12 @@ instance (FromPy a, FromPy b) => FromPy (a, b) where
     b <- fromPy pyB
     pure (a, b)
 
+instance (ToPy a, ToPy b) => ToPy (a, b) where
+  toPy (a, b) = do
+    pyA <- toPy a
+    pyB <- toPy b
+    easyToPy Py.toTuple [pyA, pyB]
+
 instance (FromPy a, FromPy b, FromPy c) => FromPy (a, b, c) where
   fromPy val = do
     [pyA, pyB, pyC] <- easyFromPy Py.fromTuple Proxy val
@@ -119,6 +133,30 @@ instance (FromPy a, FromPy b, FromPy c) => FromPy (a, b, c) where
     b <- fromPy pyB
     c <- fromPy pyC
     pure (a, b, c)
+
+instance (ToPy a, ToPy b, ToPy c) => ToPy (a, b, c) where
+  toPy (a, b, c) = do
+    pyA <- toPy a
+    pyB <- toPy b
+    pyC <- toPy c
+    easyToPy Py.toTuple [pyA, pyB, pyC]
+
+instance (FromPy a, FromPy b, FromPy c, FromPy d) => FromPy (a, b, c, d) where
+  fromPy val = do
+    [pyA, pyB, pyC, pyD] <- easyFromPy Py.fromTuple Proxy val
+    a <- fromPy pyA
+    b <- fromPy pyB
+    c <- fromPy pyC
+    d <- fromPy pyD
+    pure (a, b, c, d)
+
+instance (ToPy a, ToPy b, ToPy c, ToPy d) => ToPy (a, b, c, d) where
+  toPy (a, b, c, d) = do
+    pyA <- toPy a
+    pyB <- toPy b
+    pyC <- toPy c
+    pyD <- toPy d
+    easyToPy Py.toTuple [pyA, pyB, pyC, pyD]
 
 instance FromPy a => FromPy (Maybe a) where
   fromPy val = do
