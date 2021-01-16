@@ -2,7 +2,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module CPython.Simple where
+module CPython.Simple
+  ( arg
+  , FromPy(..)
+  , PyCastException(..)
+  , ToPy(..)
+  , call
+  , easyFromPy
+  , easyToPy
+  , getAttribute
+  , importModule
+  , initialize
+  , setAttribute
+  )
+where
 
 import CPython.Simple.Instances
 
