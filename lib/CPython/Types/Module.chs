@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- Copyright (C) 2009 John Millikin <jmillikin@gmail.com>
 --
@@ -33,7 +34,9 @@ module CPython.Types.Module
 #include <hscpython-shim.h>
 
 import           Prelude hiding (toInteger)
-import           Data.Text (Text)
+import           Control.Exception (catch, throwIO, SomeException)
+import           Data.Semigroup ((<>))
+import           Data.Text (Text, unpack)
 
 import           CPython.Internal hiding (new)
 import           CPython.Types.Integer (toInteger)
@@ -115,11 +118,18 @@ addTextConstant m name value = toUnicode value >>= addObject m name
 --
 -- This computation always uses absolute imports.
 importModule :: Text -> IO Module
-importModule name = do
+importModule name = (do
   pyName <- toUnicode name
   withObject pyName $ \namePtr ->
     {# call PyImport_Import as ^ #} namePtr
     >>= stealObject
+  ) `catch` \(e :: SomeException) -> do
+    let moduleName = unpack name
+    putStrLn $
+      "Error: Couldn't import Python module named `" <> moduleName <> "`\n" <>
+      "Maybe it's a typo, or `" <> moduleName <> "` isn't installed?\n" <>
+      "Check with `python -m " <> moduleName <> "`"
+    throwIO e
 
 -- | Reload a module. If an error occurs, an exception is thrown and the old
 -- module still exists.

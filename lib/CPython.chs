@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- Copyright (C) 2009 John Millikin <jmillikin@gmail.com>
 --
@@ -39,6 +40,7 @@ module CPython
 
 #include <hscpython-shim.h>
 
+import           Control.Exception (catch, throwIO, SomeException)
 import           Data.Text (Text)
 
 import           CPython.Internal
@@ -53,7 +55,13 @@ import           CPython.Internal
 -- is a no-op when called for a second time (without calling 'finalize'
 -- first). There is no return value; it is a fatal error if the initialization
 -- fails.
-{# fun Py_Initialize as initialize
+initialize :: IO ()
+initialize = initialize_ `catch`
+  \(e :: SomeException) -> do
+    putStrLn "Couldn't initialize.\nMaybe <Python.h> is missing?"
+    throwIO e
+
+{# fun Py_Initialize as initialize_
   {} -> `()' id #}
 
 -- | Return 'True' when the Python interpreter has been initialized, 'False'
