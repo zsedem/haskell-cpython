@@ -51,7 +51,9 @@ module CPython.Internal
   , decref
   , callObjectRaw
   , unsafeCast
-  
+  -- Threading
+  , saveThread
+  , restoreThread
   -- * Exceptions
   , Exception (..)
   , exceptionIf
@@ -79,6 +81,7 @@ module CPython.Internal
 #include <hscpython-shim.h>
 
 import qualified Control.Exception as E
+import           Control.Concurrent.Chan
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
 import           Foreign hiding (newForeignPtr, newForeignPtr_)
@@ -170,13 +173,39 @@ unsafeStealObject ptr = fromForeignPtr <$> newForeignPtr (castPtr ptr) (decref p
 stealObject :: Object obj => Ptr a -> IO obj
 stealObject ptr = exceptionIf (ptr == nullPtr) >> unsafeStealObject ptr
 
-{# fun hscpython_Py_INCREF as incref
+incref :: Ptr a -> IO ()
+incref ptr = do
+  restoreThread
+  incref' ptr
+  saveThread
+{# fun hscpython_Py_INCREF as incref'
   { castPtr `Ptr a'
   } -> `()' id #}
 
-{# fun hscpython_Py_DECREF as decref
+
+decref :: Ptr a -> IO ()
+decref ptr = do
+  restoreThread
+  decref' ptr
+  saveThread
+{# fun hscpython_Py_DECREF as decref'
   { castPtr `Ptr a'
   } -> `()' id #}
+
+{-# NOINLINE pythonThreadStates #-}
+pythonThreadStates :: Chan (Ptr ())  -- Who doesn't like global variables :)
+pythonThreadStates = unsafePerformIO newChan
+
+saveThread :: IO ()
+saveThread = do
+  state <- {# call PyEval_SaveThread as ^ #}
+  writeChan pythonThreadStates state
+
+restoreThread :: IO ()
+restoreThread = do
+  state <- readChan pythonThreadStates
+  {# call PyEval_RestoreThread as ^ #} state
+
 
 {# fun PyObject_CallObject as callObjectRaw
   `(Object self, Object args)' =>

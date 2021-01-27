@@ -19,8 +19,16 @@ module CPython
   ( initialize
   , isInitialized
   , finalize
+  , ThreadState
   , newInterpreter
   , endInterpreter
+  , evalInitThreads
+  , saveThread
+  , restoreThread
+  , GilState
+  , gilStateEnsure
+  , gilStateRelease
+  , withGilStateEnsure
   , getProgramName
   , setProgramName
   , getPrefix
@@ -42,6 +50,8 @@ module CPython
 import           Data.Text (Text)
 
 import           CPython.Internal
+import           Control.Concurrent
+import           Control.Exception(bracket)
 
 -- | Initialize the Python interpreter. In an application embedding Python,
 -- this should be called before using any other Python/C API computations;
@@ -53,6 +63,9 @@ import           CPython.Internal
 -- is a no-op when called for a second time (without calling 'finalize'
 -- first). There is no return value; it is a fatal error if the initialization
 -- fails.
+--
+-- In a multi-threaded setup you still have to call 'withGilStateEnsure' or 
+-- 'gilState_Ensure'
 {# fun Py_Initialize as initialize
   {} -> `()' id #}
 
@@ -91,7 +104,8 @@ import           CPython.Internal
 {# fun Py_Finalize as finalize
   {} -> `()' id #}
 
-newtype ThreadState = ThreadState (Ptr ThreadState)
+
+newtype ThreadState = ThreadState (Ptr ThreadState) deriving (Show)
 
 -- | Create a new sub-interpreter. This is an (almost) totally separate
 -- environment for the execution of Python code. In particular, the new
@@ -163,6 +177,49 @@ newInterpreter = do
 endInterpreter :: ThreadState -> IO ()
 endInterpreter (ThreadState ptr) =
   {# call Py_EndInterpreter as ^ #} $ castPtr ptr
+
+evalInitThreads :: IO ()
+evalInitThreads = {# call PyEval_InitThreads as ^ #}
+
+{#enum PyGILState_STATE as GilState {upcaseFirstLetter} deriving(Show) #}
+
+toGilState :: CInt -> GilState
+toGilState = toEnum . fromIntegral
+fromGilState :: GilState -> CInt
+fromGilState = fromIntegral . fromEnum
+
+-- | Ensure that the current thread is ready to call the Python C API regardless
+-- of the current state of Python, or of the global interpreter lock. This may
+-- be called as many times as desired by a thread as long as each call is matched
+-- with a 'gilStateRelease'. In general, other thread-related APIs may be used
+-- between 'gilStateEnsure' and gilStateRelease calls as long as the thread state
+-- is restored to its previous state before the Release. For this to work
+-- the thread must be a bound thread. (consider using `withGilStateEnsure`
+-- method)
+--
+-- Note: Calling this function from a thread when the runtime is finalizing
+-- will terminate the thread.
+gilStateEnsure :: IO GilState
+gilStateEnsure = do
+  state <- {# call PyGILState_Ensure as ^ #}
+  return $ toGilState state
+
+-- | Release any resources previously acquired. After this call,
+-- Python’s -- state will be the same as it was prior to the corresponding
+-- 'gilStateEnsure' call (but generally this state will be unknown to
+-- the caller, hence the use of the GILState API). Every call to
+-- 'gilStateEnsure' must be matched by a call to 'gilStateRelease'
+-- on the same bound thread.
+gilStateRelease :: GilState -> IO ()
+gilStateRelease s =
+  {# call PyGILState_Release as ^ #} $ fromGilState s
+
+-- | Ensure that the current thread is ready to call the Python C API
+-- regardless of the current state of Python, or of the global interpreter
+-- lock.
+withGilStateEnsure :: IO a -> IO a
+withGilStateEnsure ioOperation =
+  bracket gilStateEnsure gilStateRelease $ \_ -> ioOperation
 
 -- | Return the program name set with 'setProgramName', or the default.
 getProgramName :: IO Text
