@@ -4,7 +4,7 @@ license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
 maintainer: Adam Zsigmond <zsedem@gmail.com>
-build-type: Simple
+build-type: Configure
 cabal-version: 1.18
 category: Foreign
 homepage: https://github.com/zsedem/haskell-cpython
@@ -17,13 +17,13 @@ description:
   currently possible to call Haskell code from CPython, but this feature
   is planned.
 
-Flag usepython38
-  Description: 
-    Fix python version to 3.8. Needed in case of the libpython3.so does
-    not exists or not a full python3 module. (If enabled, then only works
-    for python 3.8)
-  Default:     False
+extra-tmp-files:
+  cpython.buildinfo
 
+extra-source-files:
+    LICENSE
+    configure
+    cpython.buildinfo.in
 
 source-repository head
   type: git
@@ -88,11 +88,7 @@ library
 
   c-sources: cbits/hscpython-shim.c
   include-dirs: cbits
-
-  if flag(usepython38)
-    pkgconfig-depends: python-3.8
-  else
-    pkgconfig-depends: python3
+  pkgconfig-depends: python3
   default-language:    Haskell2010
 
 test-suite cpython-testsuite
@@ -105,9 +101,5 @@ test-suite cpython-testsuite
       base > 4.0 && < 5.0
     , text
     , cpython
-  if flag(usepython38)
-    extra-libraries: python3.8
-    pkgconfig-depends: python-3.8
-  else
-    pkgconfig-depends: python3
+  pkgconfig-depends: python3
   default-language:    Haskell2010

@@ -1,0 +1,2 @@
+cc-options:
+extra-libraries: @LIBS_NAMES@ @CUSTOM_LIBS_NAMES@
