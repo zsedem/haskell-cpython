@@ -6,3 +6,6 @@ dist-newstyle
 *.swn
 
 stack.yaml.lock
+
+*.m4
+autom4te*
