@@ -1,5 +1,5 @@
 name: cpython
-version: 3.5.1
+version: 3.9.0
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
@@ -21,7 +21,7 @@ extra-tmp-files:
   cpython.buildinfo
 
 extra-source-files:
-    LICENSE
+    license.txt
     configure
     cpython.buildinfo.in
 
@@ -36,8 +36,8 @@ library
 
   build-depends:
       base >= 4.0 && < 5.0
-    , bytestring >= 0.9
-    , text
+    , bytestring >= 0.11.5 && < 0.12
+    ,  text >= 2.0.2 && < 2.1
 
   build-tools:
     c2hs >= 0.15
