@@ -51,13 +51,8 @@ module CPython.Types.Unicode
 import           Prelude hiding (length)
 import           Control.Exception (ErrorCall (..), throwIO)
 import qualified Data.Text as T
-
-#ifdef Py_UNICODE_WIDE
-import           Data.Char (chr, ord)
-#else
-import qualified Data.Text.Foreign as TF
-#endif
-
+import           Foreign.C.String
+import           Foreign.C.Types
 import           CPython.Internal
 import           CPython.Types.Bytes (Bytes)
 
@@ -86,33 +81,23 @@ withErrors errors = withCString $ case errors of
 {# fun pure unsafe hscpython_PyUnicode_Type as unicodeType
   {} -> `Type' peekStaticObject* #}
 
+
 toUnicode :: T.Text -> IO Unicode
-toUnicode str = withBuffer toPython >>= stealObject where
-  toPython ptr len = let
-    len' = fromIntegral len
-    ptr' = castPtr ptr
-    in {# call hscpython_PyUnicode_FromUnicode #} ptr' len'
-#ifdef Py_UNICODE_WIDE
-  ords = map (fromIntegral . ord) (T.unpack str) :: [CUInt]
-  withBuffer = withArrayLen ords . flip
-#else
-  withBuffer = TF.useAsPtr str
-#endif
+toUnicode txt = withCWStringLen (T.unpack txt) $ \(wstr, sz) -> do
+  obj <- {# call hscpython_PyUnicode_FromUnicode #} (castPtr wstr) (fromIntegral sz)
+  stealObject obj
+
 
 fromUnicode :: Unicode -> IO T.Text
 fromUnicode obj = withObject obj $ \ptr -> do
-  buffer <- {# call hscpython_PyUnicode_AsUnicode #} ptr
-  size <- {# call hscpython_PyUnicode_GetSize #} ptr
-#ifdef Py_UNICODE_WIDE
-  raw <- peekArray (fromIntegral size) buffer
-  return . T.pack $ map (chr . fromIntegral) raw
-#else
-  TF.fromPtr (castPtr buffer) (fromIntegral size)
-#endif
+  wstrPtr <- {# call hscpython_PyUnicode_AsUnicode #} ptr
+  wstr <- peekCWString . castPtr $ wstrPtr
+  return . T.pack $ wstr
 
 {# fun hscpython_PyUnicode_GetSize as length
   { withObject* `Unicode'
   } -> `Integer' checkIntReturn* #}
+
 
 -- | Coerce an encoded object /obj/ to an Unicode object.
 --
