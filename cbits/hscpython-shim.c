@@ -150,13 +150,19 @@ PyObject *hscpython_Py_False()
 
 /* Unicode */
 Py_ssize_t hscpython_PyUnicode_GetSize(PyObject *o)
-{ return PyUnicode_GetSize(o); }
+{ return PyUnicode_GET_LENGTH(o); }
 
-Py_UNICODE *hscpython_PyUnicode_AsUnicode(PyObject *o)
-{ return PyUnicode_AsUnicode(o); }
+wchar_t *hscpython_PyUnicode_AsUnicode(PyObject *o)
+{ wchar_t *wstr;
+	Py_ssize_t actual_size;
+	actual_size = PyUnicode_AsWideChar(o, NULL, 0);
+  wstr = malloc(actual_size);
+  PyUnicode_AsWideChar(o, wstr, actual_size);
+	return wstr;
+}
 
-PyObject *hscpython_PyUnicode_FromUnicode(Py_UNICODE *u, Py_ssize_t size)
-{ return PyUnicode_FromUnicode(u, size); }
+PyObject *hscpython_PyUnicode_FromUnicode(const wchar_t *u, Py_ssize_t size)
+{ return PyUnicode_FromWideChar(u, size); }
 
 PyObject *hscpython_PyUnicode_FromEncodedObject(PyObject *o, const char *enc, const char *err)
 { return PyUnicode_FromEncodedObject(o, enc, err); }
