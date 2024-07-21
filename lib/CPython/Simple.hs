@@ -3,7 +3,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module CPython.Simple
-  ( arg
+  ( Arg
+  , arg
   , FromPy(..)
   , PyCastException(..)
   , ToPy(..)
