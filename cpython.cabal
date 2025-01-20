@@ -36,8 +36,8 @@ library
 
   build-depends:
       base >= 4.0 && < 5.0
-    , bytestring >= 0.11.5 && < 0.12
-    ,  text >= 2.0.2 && < 2.1
+    , bytestring >= 0.11.5 && < 0.13
+    ,  text >= 2.0.2 && < 2.2
 
   build-tools:
     c2hs >= 0.15
